@@ -8,7 +8,9 @@ Created on Thu Feb  6 11:13:54 2025
 import numpy as np
 import torch
 
-from EconDLSolvers import expand_to_quad, expand_to_states, discount_factor, terminal_reward_pd, exploration
+# Now import the required functions
+from rl_project.EconDLSolvers import auxilliary 
+
 
 #%% Utility
 
@@ -68,7 +70,120 @@ def util_evans_hon(c: float, m: float , n: float , par: tuple) -> float:
 	return (c**(1 - par.sigma) / (1 - par.sigma)) + (par.chi * m**(1 - par.sigma) / (1 - par.sigma)) - (n**(1 + par.phi) / (1 + par.phi))
 
 #%% Outcome
-def outcomes(model, states, actions, t0=0, t=None):
+def outcomes(model, states: torch.Tensor, actions: torch.Tensor, t0: float = 0, t=None) -> torch.Tensor:
+    """
+    
+
+    Parameters
+    ----------
+    model : TYPE
+        DESCRIPTION.
+    states : Tensor
+        tensor of states.
+    actions : Tensor
+        tensor of actions.
+    t0 : float, optional
+        initial time. The default is 0.
+    t : TYPE, optional
+        when solving for deepvpd or deepfoc set t=one. The default is None.
+
+    Returns
+    -------
+    Tensor
+        post decision .
+
+    """
+    
+    # a. unpack model parameters and model settings for training
+    par = model.par
+    train = model.train
+    
+    # b. get consumption, bond saving, hours worked from actions
+    c_act = actions[...,0]
+    b_act = actions[...,1]
+    n_act = actions[...,2]
+    
+    # c. get state observations
+    # m_prev = states[...,0] #real money balance t-1
+    # b_prev = states[...,1] #real bond holdings t-1
+    # p_prev = states[...,2] #inflation t-1
+    # c_prev = states[...,3] #consumption t-1
+    # n_prev = states[...,4] #hours worked t-1
+    # epsn_t = states[...,5] #exogenous fiscal policy shock
+    # epsn_R = states[...,6] #exogenous monetary policy shock
+    # epsn_R_prev = states[...,7] #exogenous monetary policy shock prev
+    # epsn_y = states[...,8] #exogenous technology shock
+    
+#     if t is None: # when solving with DeepVPD or DeepFOC
+#         if len(states.shape) == 9: # when solving
+#             T,N = states.shape[:-1]
+#             y = par.y.reshape(par.T,1).repeat(1,N)
+
+#        	else:
+# 		 	T = states.shape[0]
+# 		 	N = states.shape[1]
+# 		 	y = par.y.reshape(par.T,1,1).repeat(1,N,train.Nquad)
+
+        #actions lead to changes in the envoirment
+    
+    #wages and production set
+    # y = epsn_y*n_act**(1-par.eta) #equation 8
+    
+    #p, c, b form actions and markets clear
+    # p = c_act/y #equation 21, markets clear and is set
+    # c = c_act/p #equation 22
+    # b = b_act/p #equation 23
+    
+    # #policy realisations equation 16 (taylor rule) and equation 15 goverment raises taxes
+    # R = epsn_R * (par.R_star -1) * (p / par.p_star) ** (par.A*par.R_star/ (par.R_star-1))
+    # R_prev = epsn_R_prev * (par.R_star -1) * (p_prev / par.p_star) ** (par.A*par.R_star/ (par.R_star-1))
+    # tau = par.gamma0 + par.gamma * b_prev + epsn_t
+    
+    # m = m_prev/p +  R_prev + b_prev/p - b - tau
+    # n = y**(1/(1-par.eta)) * 1/(epsn_y)
+
+    return torch.stack((c_act, b_act, n_act),dim=-1)
+        
+#%% Reward
+
+def reward(model, outcomes: torch.Tensor, t0: int = 0 , t=None) -> float:
+    par = model.par
+    
+    # a. consumption
+    c = outcomes[...,3]
+    m = outcomes[...,0]
+    n = outcomes[...,4]
+    
+    # b. utility
+    u = util_evans_hon(c, m, n, par)
+    
+    # c. finalize
+    return u 
+
+#%% Transition
+def state_trans_pd(model,states,actions,outcomes,t0=0,t=None):
+    """
+    
+
+    Parameters
+    ----------
+    model : TYPE
+        DESCRIPTION.
+    states : Tensor
+        tensor of states.
+    actions : Tensor
+        tensor of actions.
+    t0 : float, optional
+        initial time. The default is 0.
+    t : TYPE, optional
+        when solving for deepvpd or deepfoc set t=one. The default is None.
+
+    Returns
+    -------
+    Tensor
+        post decision .
+
+    """
     
     # a. unpack model parameters and model settings for training
     par = model.par
@@ -87,124 +202,87 @@ def outcomes(model, states, actions, t0=0, t=None):
     n_prev = states[...,4] #hours worked t-1
     epsn_t = states[...,5] #exogenous fiscal policy shock
     epsn_R = states[...,6] #exogenous monetary policy shock
-    epsn_y = states[...,7] #exogenous technology shock
+    epsn_R_prev = states[...,7] #exogenous monetary policy shock prev
+    epsn_y = states[...,8] #exogenous technology shock
     
-    if t is None: # when solving with DeepVPD or DeepFOC
-        if len(states.shape) == 8: # when solving
-            T,N = states.shape[:-1]
-            r.y.reshape(par.T,1).repeat(1,N)
-    
-  		else:
-  			T = states.shape[0]
-  			N = states.shape[1]
-  			y = par.y.reshape(par.T,1,1).repeat(1,N,train.Nquad)
+#     if t is None: # when solving with DeepVPD or DeepFOC
+#         if len(states.shape) == 9: # when solving
+#             T,N = states.shape[:-1]
+#             y = par.y.reshape(par.T,1).repeat(1,N)
+
+#       	else:
+# 		 	T = states.shape[0]
+# 		 	N = states.shape[1]
+# 		 	y = par.y.reshape(par.T,1,1).repeat(1,N,train.Nquad)
 
         #actions lead to changes in the envoirment
-        y = epsn_y*n_act**(1-par.eta)
-        p = c_act/y
-        c = c_act/p
-        b = b_act/p
-        n = y**(1/(1-par.eta)) * 1/(epsn_y)
-
-        return torch.stack((c,m,m),dim=-1)
-        
-#%% Reward
-def reward(model,states,actions,outcomes,t0=0,t=None):
-	""" reward """
-
-	par = model.par
-
-	# a. consumption
-	c = outcomes[...,0]
-	m = outcomes[...,1]
-    n = outcomes[...,3]
-
-	# b. utility
-	u = utilevans_hon(c, m, c, par)
-
-	# c. finalize
-	return u 
-
-def reward(model, action: np.array, outcomes: np.array, util = "evans") -> float:
-    """
-
-    Parameters
-    ----------
-    model : TYPE
-        models DeepV, DeepVPD etc.
-    action : np.array
-        the action of the household.
-    outcomes : np.array
-        the outcome of the action.
-    util : TYPE, optional
-        DESCRIPTION. The default is "iacoviello".
-
-    Returns
-    -------
-    float
-        returns the reward for the actions taken.
-
-    """
     
-    return NotImplementedError
+    #wages and production set
+    y = epsn_y*n_act**(1-par.eta) #equation 8
+    
+    #p, c, b form actions and markets clear
+    p = c_act/y #equation 21, markets clear and is set
+    c = c_act/p #equation 22
+    b = b_act/p #equation 23
+    
+    #policy realisations equation 16 (taylor rule) and equation 15 goverment raises taxes
+    R = epsn_R * (par.R_star -1) * (p / par.p_star) ** (par.A*par.R_star/ (par.R_star-1))
+    R_prev = epsn_R_prev * (par.R_star -1) * (p_prev / par.p_star) ** (par.A*par.R_star/ (par.R_star-1))
+    tau = par.gamma0 + par.gamma * b_prev + epsn_t
+    
+    m = m_prev/p +  R_prev + b_prev/p - b - tau
+    n = y**(1/(1-par.eta)) * 1/(epsn_y)
 
-import numpy as np
-from EconDLSolvers import DeepVPD
+    return torch.stack((m, b, p, c, n),dim=-1)
 
-# Utility function
-def utility(c, m, n, sigma, phi, chi):
-    return (c**(1 - sigma) / (1 - sigma)) + (chi * m**(1 - sigma) / (1 - sigma)) - (n**(1 + phi) / (1 + phi))
 
-# Reward function
-def reward(state, action, params):
-    c, m, n = action
-    sigma, phi, chi = params['sigma'], params['phi'], params['chi']
-    return utility(c, m, n, sigma, phi, chi)
 
-# State transition function
-def transition(state, action, params):
-    m_prev, b_prev, π_prev = state
-    c, m_new, n = action
-    β, R, τ, π_target = params['beta'], params['R'], params['tau'], params['pi_target']
-    π = c / π_prev  # Inflation from market clearing
-    b_new = (1 + R / π_prev) * b_prev + m_prev - m_new - τ
-    return np.array([m_new, b_new, π])
+def state_trans(model,state_trans_pd,shocks,t=None):
+	""" state transition with quadrature """
 
-# Solve using DeepVPD
-def solve_drl(params):
-    solver = DeepVPD(
-        state_dim=3,  # State: (money holdings, bonds, inflation)
-        control_dim=3,  # Actions: (consumption, new money holdings, labor)
-        reward=lambda s, a: reward(s, a, params),
-        transition=lambda s, a: transition(s, a, params),
-        beta=params['beta'],  # Discount factor
-        state_bounds=[[0, 10], [-10, 10], [0.5, 2]],  # Bounds for states
-        control_bounds=[[0.1, 5], [0, 10], [0, 2]],  # Bounds for actions
-        max_steps=1000,  # Training steps
-        T=30,  # Time horizon
-        network_layers=[64, 64],  # Neural network layers
-        name="EconomicModel"
-    )
-    solver.train()
-    return solver
+	# Case I: t is None -> t in 0,...,T-1 <= par.T-1:
+	#  outcomes.shape = (T,N,Noutcomes)
+	#  shocks.shape = (Nquad,Nshocks) [this is quadrature nodes]
+	# Case II: t in 0,...,T-1, t0 irrelevant:
+	#  outcomes.shape = (N,Noutcomes)
+	#  shocks.shape = (N,Nshocks) [this is actual shocks]
 
-# Parameters for the model
-params = {
-    "beta": 0.99,  # Discount factor
-    "sigma": 3.0,  # Risk aversion
-    "phi": 1.0,  # Frisch elasticity inverse
-    "chi": 0.1,  # Weight of money in utility
-    "R": 1.01,  # Nominal interest rate
-    "tau": 0.02,  # Tax rate
-    "pi_target": 1.01  # Inflation target
-}
+	# a. unpack settings
+    par = model.par
+    train = model.train
+    
+    # b. unpack outcomes
+    m_pd = state_trans_pd[...,0] 
+    b_pd = state_trans_pd[...,1]
+    p_pd = state_trans_pd[...,2]
+    c_pd = state_trans_pd[...,3]
+    n_pd = state_trans_pd[...,4]
+    
+    # c. unpack shocks
+    epsn_t_plus = shocks[:,0]
+	epsn_R_plus = shocks[:,1]
+	epsn_R = shocks[:,2]
+    epsn_y_plus = shocks[:,3] 
 
-# Train the model
-solver = solve_drl(params)
+	# b. adjust shape and scale quadrature nodes (when solving)
+	if t is None:
+        
+        m_pd = expand_to_quad(m_pd, train.Nquad)
+        b_pd = expand_to_quad(b_pd, train.Nquad)
+        p_pd = expand_to_quad(p_pd, train.Nquad)
+        c_pd = expand_to_quad(c_pd, train.Nquad)
+        n_pd = expand_to_quad(n_pd, train.Nquad)
+        
 
-# Test results
-print("Policy function at test states:")
-test_states = np.array([[1, 1, 1], [2, -1, 1.02], [1, 2, 0.98]])
-print(solver.get_policy_function()(test_states))
+		epsn_t_plus = expand_to_states(epsn_t_plus,outcomes)
+		epsn_R_plus = expand_to_states(epsn_R_plus,outcomes)
+        epsn_R = expand_to_states(epsn_R,outcomes)
+        epsn_y_plus = expand_to_states(epsn_y_plus,outcomes)
+	
+	# d. finalize
+	states_plus = torch.stack((m_pd, b_pd, p_pd, c_pd, n_pd, epsn_t_plus, epsn_R_plus, epsn_R, epsn_y_plus),dim=-1)
+	return states_plus
+
+
 
 
