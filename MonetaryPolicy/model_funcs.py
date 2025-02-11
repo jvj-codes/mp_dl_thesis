@@ -202,8 +202,8 @@ def state_trans_pd(model,states,actions,outcomes,t0=0,t=None):
     n_prev = states[...,4] #hours worked t-1
     epsn_t = states[...,5] #exogenous fiscal policy shock
     epsn_R = states[...,6] #exogenous monetary policy shock
-    epsn_R_prev = states[...,7] #exogenous monetary policy shock prev
-    epsn_y = states[...,8] #exogenous technology shock
+    #epsn_R_prev = states[...,7] #exogenous monetary policy shock prev
+    epsn_y = states[...,7] #exogenous technology shock
     
 #     if t is None: # when solving with DeepVPD or DeepFOC
 #         if len(states.shape) == 9: # when solving
@@ -227,27 +227,28 @@ def state_trans_pd(model,states,actions,outcomes,t0=0,t=None):
     
     #policy realisations equation 16 (taylor rule) and equation 15 goverment raises taxes
     R = epsn_R * (par.R_star -1) * (p / par.p_star) ** (par.A*par.R_star/ (par.R_star-1))
-    R_prev = epsn_R_prev * (par.R_star -1) * (p_prev / par.p_star) ** (par.A*par.R_star/ (par.R_star-1))
+    R_prev = par.epsn_R_prev * (par.R_star -1) * (p_prev / par.p_star) ** (par.A*par.R_star/ (par.R_star-1))
     tau = par.gamma0 + par.gamma * b_prev + epsn_t
     
     m = m_prev/p +  R_prev + b_prev/p - b - tau
     n = y**(1/(1-par.eta)) * 1/(epsn_y)
-
+    
+    par.epsn_R_prev = R
+    
+    if t is None:
+        
+        m = auxilliary.expand_to_quad(m, train.Nquad)
+        b = auxilliary.expand_to_quad(b, train.Nquad)
+        p = auxilliary.expand_to_quad(p, train.Nquad)
+        c = auxilliary.expand_to_quad(c, train.Nquad)
+        n = auxilliary.expand_to_quad(n, train.Nquad)
+        
     return torch.stack((m, b, p, c, n),dim=-1)
 
 
 
 def state_trans(model,state_trans_pd,shocks,t=None):
-	""" state transition with quadrature """
 
-	# Case I: t is None -> t in 0,...,T-1 <= par.T-1:
-	#  outcomes.shape = (T,N,Noutcomes)
-	#  shocks.shape = (Nquad,Nshocks) [this is quadrature nodes]
-	# Case II: t in 0,...,T-1, t0 irrelevant:
-	#  outcomes.shape = (N,Noutcomes)
-	#  shocks.shape = (N,Nshocks) [this is actual shocks]
-
-	# a. unpack settings
     par = model.par
     train = model.train
     
@@ -260,28 +261,28 @@ def state_trans(model,state_trans_pd,shocks,t=None):
     
     # c. unpack shocks
     epsn_t_plus = shocks[:,0]
-	epsn_R_plus = shocks[:,1]
-	epsn_R = shocks[:,2]
+    epsn_R_plus = shocks[:,1]
+    epsn_R = shocks[:,2]
     epsn_y_plus = shocks[:,3] 
 
 	# b. adjust shape and scale quadrature nodes (when solving)
-	if t is None:
+    if t is None:
         
-        m_pd = expand_to_quad(m_pd, train.Nquad)
-        b_pd = expand_to_quad(b_pd, train.Nquad)
-        p_pd = expand_to_quad(p_pd, train.Nquad)
-        c_pd = expand_to_quad(c_pd, train.Nquad)
-        n_pd = expand_to_quad(n_pd, train.Nquad)
+        m_pd = auxilliary.expand_to_quad(m_pd, train.Nquad)
+        b_pd = auxilliary.expand_to_quad(b_pd, train.Nquad)
+        p_pd = auxilliary.expand_to_quad(p_pd, train.Nquad)
+        c_pd = auxilliary.expand_to_quad(c_pd, train.Nquad)
+        n_pd = auxilliary.expand_to_quad(n_pd, train.Nquad)
         
 
-		epsn_t_plus = expand_to_states(epsn_t_plus,outcomes)
-		epsn_R_plus = expand_to_states(epsn_R_plus,outcomes)
-        epsn_R = expand_to_states(epsn_R,outcomes)
-        epsn_y_plus = expand_to_states(epsn_y_plus,outcomes)
+        epsn_t_plus = auxilliary.expand_to_states(epsn_t_plus,outcomes)
+        epsn_R_plus = auxilliary.expand_to_states(epsn_R_plus,outcomes)
+        epsn_R = auxilliary.expand_to_states(epsn_R,outcomes)
+        epsn_y_plus = auxilliary.expand_to_states(epsn_y_plus,outcomes)
 	
 	# d. finalize
-	states_plus = torch.stack((m_pd, b_pd, p_pd, c_pd, n_pd, epsn_t_plus, epsn_R_plus, epsn_R, epsn_y_plus),dim=-1)
-	return states_plus
+    states_plus = torch.stack((m_pd, b_pd, p_pd, c_pd, n_pd, epsn_t_plus, epsn_R_plus, epsn_R, epsn_y_plus),dim=-1)
+    return states_plus
 
 
 

@@ -4,12 +4,10 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
-import sys
 
 # Add the directory containing auxilliary.py to the Python path
-sys.path.append(r"C:\Speciale\EconDLSolvers\EconDLSolvers\EconDLSolvers")
 
-from neural_nets import *
+from rl_project.EconDLSolvers import neural_nets
 
 ############################
 # random number generation #

@@ -12,8 +12,10 @@ import torch
 torch.set_warn_always(True)
 
 # local
-from misc import log_normal_gauss_hermite, gauss_hermite
+from rl_project.MonetaryPolicy import misc
 from rl_project.EconDLSolvers import DLSolverClass, torch_uniform
+from rl_project.EconDLSolvers import auxilliary
+from rl_project.MonetaryPolicy import model_funcs
 
 class MonetaryPolicyModelClass(DLSolverClass):
     
@@ -23,7 +25,7 @@ class MonetaryPolicyModelClass(DLSolverClass):
     
     def setup(self, full=None):
         
-        #parameters
+        #parameters, active mp
         
         par = self.par
         sim = self.sim
@@ -77,12 +79,14 @@ class MonetaryPolicyModelClass(DLSolverClass):
         
         # b. solver settings
         
-        # states and shcoks
+        # states, actions and shocks
         par.Nstates = 8
-        par.Nshocks = 2
+        par.Nstates_pd = 5
+        par.Nshocks = 3
+        par.Nactions = 3
         
         # outcomes and actions
-        par.Noutcomes = 5 # consumption, labor, money holdings, bond holdings, inflation
+        par.Noutcomes = 3 # consumption, labor, money holdings, bond holdings, inflation
         par.KKT = False ## use KKT conditions (for DeepFOC)
         par.NDC = 0 # number of discrete choices
         
@@ -105,11 +109,11 @@ class MonetaryPolicyModelClass(DLSolverClass):
             sim.N = 10_000
         
         # b. quadrature
-        par.epsn_t, par.epsn_t_w = log_normal_gauss_hermite(sigma = par.sigma_tau, n = par.Ntau, mu = par.mu_tau) #returns nodes of length n, weights of length n
+        par.epsn_t, par.epsn_t_w = misc.log_normal_gauss_hermite(sigma = par.sigma_tau, n = par.Ntau, mu = par.mu_tau) #returns nodes of length n, weights of length n
         
-        par.epsn_R, par.epsn_R_w = gauss_hermite(sigma = par.sigma_R, n = par.NR, mu = par.mu_R)
+        par.epsn_R, par.epsn_R_w = misc.normal_gauss_hermite(sigma = par.sigma_R, n = par.NR, mu = par.mu_R)
         
-        par.epsn_y, par.epsn_y_w = gauss_hermite(sigma = par.sigma_y, n = par.Ny, mu = par.mu_y)
+        par.epsn_y, par.epsn_y_w = misc.normal_gauss_hermite(sigma = par.sigma_y, n = par.Ny, mu = par.mu_y)
         
         par.epsn_t_w = torch.tensor(par.epsn_t_w,dtype=dtype,device=device)
         par.epsn_t = torch.tensor(par.epsn_t,dtype=dtype,device=device)
@@ -147,12 +151,12 @@ class MonetaryPolicyModelClass(DLSolverClass):
             #train.min_actions = torch.tensor([0.995, 3.960, 0.990],dtype=dtype,device=device) #AMP minimum action value c, b, n
             #train.max_actions = torch.tensor([1.005, 4.040, 1.010],dtype=dtype,device=device) #AMP maximum action value c, b, n
         else: 
-            train.policy_activation_final = ['sigmoid', 'sigmoid']
+            train.policy_activation_final = ['sigmoid', 'sigmoid', 'sigmoid']
             train.min_actions = torch.tensor([1.005, 4.00, 0.990],dtype=dtype,device=device) #AMP minimum action value c, b, n
             train.max_actions = torch.tensor([1.015, 4.08, 1.010],dtype=dtype,device=device) #AMP maximum action value c, b, n
             
-            train.epsilon_sigma = np.array([0.1,0.1])
-            train.epsilon_sigma_min = np.array([0.0,0.0])
+            train.epsilon_sigma = np.array([0.1,0.1,0.1])
+            train.epsilon_sigma_min = np.array([0.0,0.0,0.0])
         
         # c. misc
         train.terminal_actions_known = False # use terminal actions
@@ -194,6 +198,17 @@ class MonetaryPolicyModelClass(DLSolverClass):
         quad_w = epsn_t_w.flatten() * epsn_R_w.flatten() * epsn_y_w.flatten()
         
         return quad, quad_w
+
+    
+    def draw_shocks(self,N):
+        
+        par = self.par
+        
+        epsn_t = torch.exp(torch.normal(mean=par.mu_tau, std=par.sigma_tau, size=(par.T, N),))
+        epsn_R = torch.normal(par.sigma_R, par.mu_R, size=(par.T,N,))
+        epsn_y = torch.normal(par.sigma_y, par.mu_y, size=(par.T,N,))
+        
+        return torch.stack((epsn_t, epsn_R, epsn_y),dim=-1) 
     
     def draw_initial_states(self,N,training=False): #atm uniform
         
@@ -214,17 +229,15 @@ class MonetaryPolicyModelClass(DLSolverClass):
         # e. draw initial hours worked
         n0 = torch_uniform(par.n_min, par.n_max, size = (N,))
         
-        return torch.stack((m0, b0, c0, p0, n0))
-    
-    def draw_shocks(self,N):
+        # f. initial state for shocks
         
-        par = self.par
+        t0_eps = torch.exp(torch.normal(mean=par.mu_tau, std=par.sigma_tau, size=(N,)))
+        r0_eps = torch.normal(par.sigma_R, par.mu_R, size=(N,))
+        y0_eps = torch.normal(par.sigma_y, par.mu_y, size=(N,))
         
-        epsn_t = torch.log_normal_(par.sigma_tau, par.mu_tau, size=(par.T,N,))
-        epsn_R = torch.normal(par.sigma_R, par.mu_R, size=(par.T,N,))
-        epsn_y = torch.normal(par.sigma_y, par.mu_y, size=(par.T,N,))
+        par.epsn_R_prev = r0_eps
         
-        return torch.stack((epsn_t, epsn_R, epsn_y),dim=-1) 
+        return torch.stack((m0, b0, c0, p0, n0, t0_eps, r0_eps, y0_eps),dim=-1)
     
     def draw_exploration_shocks(self,epsilon_sigma,N): 
         """ draw exploration shockss """ 
@@ -253,13 +266,13 @@ class MonetaryPolicyModelClass(DLSolverClass):
     
     outcomes = model_funcs.outcomes
     reward = model_funcs.reward
-    discount_factor = model_funcs.discount_factor
+    discount_factor = auxilliary.discount_factor
 	
-    terminal_reward_pd = model_funcs.terminal_reward_pd
+    terminal_reward_pd = auxilliary.terminal_reward_pd
 		
     state_trans_pd = model_funcs.state_trans_pd
     state_trans = model_funcs.state_trans
-    exploration = model_funcs.exploration
+    exploration = auxilliary.exploration
 
     
     
