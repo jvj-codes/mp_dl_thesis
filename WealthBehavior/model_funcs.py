@@ -146,7 +146,7 @@ def outcomes(model, states: torch.Tensor, actions: torch.Tensor, t0: float = 0, 
         
     # the money holdings transition
     m = wealth - c_act - q*h_act - e_act - b_act - d*(R-1+par.rp) - par.lbda * d + d_act - (1-par.lbda) * d
-    m = m/pi #real money holdings
+    m = m/(1+pi) #real money holdings
     
     return torch.stack((c_act, m, h_act, n_act),dim=-1)
         
@@ -156,10 +156,10 @@ def reward(model, outcomes: torch.Tensor, t0: int = 0 , t=None) -> float:
     par = model.par
     
     # a. 
-    c = outcomes[...,1]
-    m = outcomes[...,2]
-    h = outcomes[...,3]
-    n = outcomes[...,4]
+    c = outcomes[...,0]
+    m = outcomes[...,1]
+    h = outcomes[...,2]
+    n = outcomes[...,3]
     
     # b. utility
     u = util_evans_hon(c, m, h, n, par)
@@ -197,10 +197,10 @@ def state_trans_pd(model,states,actions,outcomes,t0=0,t=None):
     train = model.train
     
     # b. get outcomes
-    #c = outcomes[...,1]
-    m = outcomes[...,2]
-    #h = outcomes[...,3]
-    #n = outcomes[...,4]
+    #c = outcomes[...,0]
+    m = outcomes[...,1]
+    #h = outcomes[...,2]
+    #n = outcomes[...,3]
     
     # c. get state observations
     pi = states[...,0]  # inflation at time t
@@ -323,33 +323,41 @@ def eval_KKT(model,states,states_plus,actions,actions_plus,outcomes,outcomes_plu
     h_plus  = states_plus[...,9]  # house holdings t-1
     
     # c. outcomes at time t
-    c = outcomes[...,1]
-    m = outcomes[...,2]
-    h = outcomes[...,3]
-    n = outcomes[...,4]
+    c = outcomes[...,0]
+    m = outcomes[...,1]
+    h = outcomes[...,2]
+    n = outcomes[...,3]
     
-    # d. outcomes at time t
-    c_plus = outcomes_plus[...,1]
-    m_plus = outcomes_plus[...,2]
-    h_plus = outcomes_plus[...,3]
-    n_plus = outcomes_plus[...,4]
+    # d. get actions
+    c_act = actions[...,0] # Consumption
+    h_act = actions[...,1]  # Housing investment
+    n_act = actions[...,2] # Hours worked
+    e_act = actions[...,3]  # Equity investment
+    b_act = actions[...,4]  # Bond investment
+    d_act = actions[...,5]  # New debt
     
-    # e. multiplier at time t
+    # e. outcomes at time t
+    c_plus = outcomes_plus[...,0]
+    m_plus = outcomes_plus[...,1]
+    h_plus = outcomes_plus[...,2]
+    n_plus = outcomes_plus[...,3]
+    
+    # f. multiplier at time t
     mu_t = actions[...,6]
     
-    # f. compute marginal utility at time t
+    # g. compute marginal utility at time t
     marg_util_c_t = marg_util_c(c)
     marg_util_m_t = marg_util_c(m)
     marg_util_h_t = marg_util_c(h)
     marg_util_n_t = marg_util_c(n)
     
-    # g. compute marginal utility at time t+1
+    # h. compute marginal utility at time t+1
     marg_util_c_plus = marg_util_c(c_plus)
     marg_util_m_plus = marg_util_c(m_plus)
     marg_util_h_plus = marg_util_c(h_plus)
     marg_util_n_plus = marg_util_c(n_plus)
     
-    # h. first order conditions
+    # i. first order conditions
     ## 1. compute expected marginal utility at time t+1
     exp_marg_util_plus = torch.sum(train.quad_w[None,None,:]*marg_util_c_plus,dim=-1)
     
@@ -359,21 +367,28 @@ def eval_KKT(model,states,states_plus,actions,actions_plus,outcomes,outcomes_plu
     FOC_c = torch.cat((FOC_c_,FOC_c_terminal[None,...]),dim=0)
     
     ## 3. money demand
-    FOC_m_ = (c - 1/(mu_t*par.eta))*par.chi - m
+    FOC_m_ = (c_act - 1/(mu_t*par.eta))*par.chi - m
     FOC_m_terminal = torch.zeros_like(FOC_m_[-1])
     FOC_m = torch.cat((FOC_m_,FOC_m_terminal[None,...]),dim=0)
     
     ## 4. housing demand
-    FOC_h_ = (c/q - 1/(mu_t*par.eta*q))*par.j - h
+    FOC_h_ = (c_act/q - 1/(mu_t*par.eta*q))*par.j - h_act
     FOC_h_terminal = torch.zeros_like(FOC_h_[-1])
     FOC_h = torch.cat((FOC_h_,FOC_h_terminal[None,...]),dim=0)
     
     ## 5. labor supply
-    FOC_n_ = 1/(1/c - mu_t*par.vartheta)*n**(par.varphi-1) - w
+    FOC_n_ = 1/(1/c_act - mu_t*par.vartheta)*n**(par.varphi-1) - w
     FOC_n_terminal = torch.zeros_like(FOC_n_[-1])
-    FOC_n = torch.cat((FOC_h_,FOC_h_terminal[None,...]),dim=0)
+    FOC_n = torch.cat((FOC_n_,FOC_n_terminal[None,...]),dim=0)
     
-    # i. borrowing constraint
-    constraint = par.eta*(q*h + e + m + b) + par.vartheta - (1+par.eta)*
+    # j. borrowing constraint
+    constraint = par.eta*(q*h_act + e_act + m + b_act) + par.vartheta - (1+par.eta)*d_act
+    slackness_ = constraint[-1] * mu_t[:-1]
+    slackness_terminal = constraint[-1]
+    slackness = torch.cat((slackness_,slackness_terminal[None,...]),dim=0)
     
+    # k. combine equations
+    eq = torch.stack((FOC_c**2,FOC_m**2,FOC_h**2, FOC_n**2,slackness),dim=-1)
+    
+    return eq
     

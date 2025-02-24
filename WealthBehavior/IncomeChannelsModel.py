@@ -12,20 +12,18 @@ import torch
 torch.set_warn_always(True)
 
 # local
-from rl_project.MonetaryPolicy import misc
+from rl_project.WealthBehavior import misc
+from rl_project.WealthBehavior import model_funcs
 from rl_project.EconDLSolvers import DLSolverClass, torch_uniform
 from rl_project.EconDLSolvers import auxilliary
-from rl_project.IncomeChannels import model_funcs
 
-class IncomeChannelsModelClass(DLSolverClass):
+class WealthBehaviorModelClass(DLSolverClass):
     
     #########
 	# setup #
 	#########
     
     def setup(self, full=None):
-        
-        #parameters, active mp
         
         par = self.par
         sim = self.sim
@@ -39,63 +37,98 @@ class IncomeChannelsModelClass(DLSolverClass):
         ## parameters of the model
         
         par.beta = 0.99     #discount factor
-        par.sigma = 3.0     #inverse of intertemporal elasticity of consumption and money holdings
+        #par.sigma = 3.0     #inverse of intertemporal elasticity of consumption and money holdings
         par.phi = 1         #inverse of Frisch elasticity of labor supply
         par.chi = 0.1       #relative preference weight of money holdings
+        par.j = 0.1         #relative preference weight of house holdings
         par.A = 1.3         #taylor rule coefficient
         par.p_star = 1.01   #target gross high-inflation rate (4% per annum)
+        par.R_star = par.beta / par.p_star #target nominal interest rate
         par.rho_p = 0.3     #persistence of inflation 
         par.gamma = 1.03    #gross wage growth
         par.eta = 0.7       #fraction of wealth to determine limit of debt
         par.vartheta = 0.4  #fraction of wage income to determine limit of debt
+        par.lbda = 0.2      #minimum payment due
+        par.varphi = 1.01   #labor supply schedule
+        par.rp = 0.03       #risk premium 3%
+        
+        # wealth
+        par.y_base = 1.0 # base
         
         ## mean and std of shocks
         
-        par.sigma_psi = 0.0005 #wage shock (std std.) log_normal distributed
-        par.mu_psi = 1         #wage shock mean one 
+        par.psi_sigma = 0.0005 #wage shock (std std.) log_normal distributed
+        par.psi_mu = 1         #wage shock mean one 
+        par.Npsi = 4
         
-        par.sigma_Q = 2 #equity returns shock (std. dev) gamma distributed
-        par.mu_Q = 1    #equity returns shock mean one
+        par.Q_loc = 1    #equity returns shock (mean) student-t distributed
+        par.Q_nu = 4     #equity returns degrees of freedom
+        par.Q_scale = 2  #equity returns shock (std. dev) student-t distributed
+        par.NQ = 4       #equity returns shock quadrature nodes
         
-        par.sigma_R = 0.0005 #monetary policy shock (std. dev) normal mean = 0
-        par.mu_R = 0.0       #monetary policy shock mean
+        par.R_sigma = 0.0005 #monetary policy shock (std. dev) normal mean = 0
+        par.R_mu = 0.0       #monetary policy shock mean
         par.NR = 4           #monetary policy quadrature nodes
         
-        par.sigma_pi = 0.0005 #inflation shock (std. dev) log_normal distributed
-        par.mu_pi = 0.0       #inflation shock mean
-        par.Npi               #inflation shock quardrature nodes
+        par.pi_sigma = 0.0005 #inflation shock (std. dev) log_normal distributed
+        par.pi_mu = 0.0       #inflation shock mean
+        par.Npi  = 4          #inflation shock quardrature nodes
         
-        par.sigma_un = 0.00005   #unemployment (std dev) normal distributed
-        par.mu_un = 0.05         #unemployment on average 5pct.         
+        par.h_sigma = 0.0005 #house price shock (std. dev) log normal dis
+        par.h_mu = 1         #house price mean 
+        par.Nh = 4
         
         
-        ## initial states
-        
-        par.m_min = 1.670
-        par.m_max = 1.750
-        
-        par.b_min = 3.960
-        par.b_max = 4.040
-        
-        par.c_min = 0.995
-        par.c_max = 1.005
+        ## Interval values of initial states and actions REVISIT
         
         par.pi_min = 0.000 # minimum inflation of 0% 
         par.pi_max = 0.080 # maximum inflation of 8%
         
+        par.R_min = 0.000 # minimum interest rate of 0%
+        par.R_max = 0.100 # maximum interest rate of 10%
+        
+        par.eq_min = -0.3 # minium return on equity -30%
+        par.eq_max = 0.3  # maximum return on equity 30%
+        
+        par.w_min = 0.0    # minimum wage
+        par.w_max = np.inf # maximum wage, no bounds?
+        
+        par.e_min = 0.000 # minimum holdings of equity
+        par.e_max = 4.000 # maximum holdings of equity
+        
+        par.b_min = 0.000 # minimum holdings of bonds
+        par.b_max = 4.000 # maximum holdings of bonds
+        
+        par.m_min = 0.001
+        par.m_max = 12
+        
+        par.q_min = 0.000 # minimum holdings of bonds
+        par.q_max = 4.000 # maximum holdings of bonds
+        
+        
+        ###
+        par.c_min = 0.995
+        par.c_max = 1.005
+        
         par.n_min = 0.990
         par.n_max = 1.010
+        
+        par.h_min = 0.000 # minimum house holdings
+        par.h_max = 4.000 # maximum house holdings
+        
+        par.d_min = 0.000 # minimum debt
+        par.d_max = 4.000 # maximum debt (will be determined by constraint ultimately)
         
         # b. solver settings
         
         # states, actions and shocks
-        par.Nstates = 5
-        par.Nstates_pd = 5
+        par.Nstates = 10
+        par.Nstates_pd = 8
         par.Nshocks = 5
-        par.Nactions = 3
+        par.Nactions = 6
         
         # outcomes and actions
-        par.Noutcomes = 3 # consumption, labor, money holdings, bond holdings
+        par.Noutcomes = 4 # consumption, labor, money holdings, house holdings
         par.KKT = False ## use KKT conditions (for DeepFOC)
         par.NDC = 0 # number of discrete choices
         
@@ -114,26 +147,42 @@ class IncomeChannelsModelClass(DLSolverClass):
         device = train.device
         
         if not par.full: # for solving without GPU
-            par.T= 3
+            par.T = 5
             sim.N = 10_000
+            
+        if par.KKT:
+            par.Nactions = 7
+        else:
+            par.Nactions = 6
         
-        # b. quadrature
-        par.epsn_t, par.epsn_t_w = misc.log_normal_gauss_hermite(sigma = par.sigma_tau, n = par.Ntau, mu = par.mu_tau) #returns nodes of length n, weights of length n
+        #life time wealth
+        par.y = torch.zeros(par.T,dtype=dtype,device=device)	
+        par.y[0] = par.y_base
         
-        par.epsn_R, par.epsn_R_w = misc.normal_gauss_hermite(sigma = par.sigma_R, n = par.NR, mu = par.mu_R)
+        # c. quadrature
+        par.psi, par.psi_w  = misc.log_normal_gauss_hermite(sigma = par.psi_sigma, n = par.Npsi, mu = par.psi_mu)
+        par.R, par.R_w      = misc.log_normal_gauss_hermite(sigma = par.R_sigma, n = par.NR, mu = par.R_mu) #returns nodes of length n, weights of length n
+        par.pi, par.pi_w    = misc.log_normal_gauss_hermite(sigma = par.pi_sigma, n = par.Npi, mu = par.pi_mu)
+        par.q, par.q_w      = misc.student_t_gauss_hermite(nu = par.Q_nu, loc = par.Q_loc, scale = par.Q_scale, n = par.NQ)
+        par.h, par.h_w      = misc.log_normal_gauss_hermite(sigma = par.h_sigma, n = par.Nh, mu = par.h_mu)
         
-        par.epsn_y, par.epsn_y_w = misc.normal_gauss_hermite(sigma = par.sigma_y, n = par.Ny, mu = par.mu_y)
+
+        par.psi_w  = torch.tensor(par.psi_w,dtype=dtype,device=device)
+        par.psi = torch.tensor(par.psi,dtype=dtype,device=device)
         
-        par.epsn_t_w = torch.tensor(par.epsn_t_w,dtype=dtype,device=device)
-        par.epsn_t = torch.tensor(par.epsn_t,dtype=dtype,device=device)
+        par.R_w  = torch.tensor(par.R_w,dtype=dtype,device=device)
+        par.R = torch.tensor(par.R,dtype=dtype,device=device)
         
-        par.epsn_R_w = torch.tensor(par.epsn_R_w,dtype=dtype,device=device)
-        par.epsn_R = torch.tensor(par.epsn_R,dtype=dtype,device=device)
+        par.pi_w  = torch.tensor(par.pi_w,dtype=dtype,device=device)
+        par.pi = torch.tensor(par.pi,dtype=dtype,device=device)
         
-        par.epsn_y_w = torch.tensor(par.epsn_y_w,dtype=dtype,device=device)
-        par.epsn_y = torch.tensor(par.epsn_y,dtype=dtype,device=device)
+        par.q_w  = torch.tensor(par.q_w,dtype=dtype,device=device)
+        par.q = torch.tensor(par.q,dtype=dtype,device=device)
         
-        # c. simulation
+        par.h_w  = torch.tensor(par.h_w,dtype=dtype,device=device)
+        par.h = torch.tensor(par.h,dtype=dtype,device=device)
+        
+        # d. simulation
         sim.states = torch.zeros((par.T,sim.N,par.Nstates),dtype=dtype,device=device)
         sim.states_pd = torch.zeros((par.T,sim.N,par.Nstates_pd),dtype=dtype,device=device)
         sim.shocks = torch.zeros((par.T,sim.N,par.Nshocks),dtype=dtype,device=device)
@@ -155,17 +204,22 @@ class IncomeChannelsModelClass(DLSolverClass):
             
         # b. policy activation functions and clipping
         if par.KKT:
-            raise NotImplementedError
-            #train.policy_activation_final = ['sigmoid', 'sigmoid', 'softplus']
-            #train.min_actions = torch.tensor([0.995, 3.960, 0.990],dtype=dtype,device=device) #AMP minimum action value c, b, n
-            #train.max_actions = torch.tensor([1.005, 4.040, 1.010],dtype=dtype,device=device) #AMP maximum action value c, b, n
-        else: 
-            train.policy_activation_final = ['sigmoid', 'sigmoid', 'sigmoid']
-            train.min_actions = torch.tensor([1.005, 4.00, 0.990],dtype=dtype,device=device) #AMP minimum action value c, b, n
-            train.max_actions = torch.tensor([1.015, 4.08, 1.010],dtype=dtype,device=device) #AMP maximum action value c, b, n
+            ## c, h, n, a, b, d, mu_t
+            train.policy_activation_final = ['sigmoid', 'sigmoid', 'sigmoid','sigmoid','sigmoid','sigmoid','softplus']
+            train.min_actions = torch.tensor([par.c_min, par.h_min, par.n_min, par.e_min, par.b_min, par.d_min, 0.00],dtype=dtype,device=device) #minimum action value c, h, n, a, b, d
+            train.max_actions = torch.tensor([par.c_max, par.h_max, par.n_max, par.e_max, par.b_max, par.d_max, np.inf],dtype=dtype,device=device) #maximum action value c, h, n, a, b, d
             
-            train.epsilon_sigma = np.array([0.1,0.1,0.1])
-            train.epsilon_sigma_min = np.array([0.0,0.0,0.0])
+            train.epsilon_sigma = np.array([0.1,0.1,0.1,0.1,0.1,0.1,0.0]) #revisit this
+            train.epsilon_sigma_min = np.array([0.0,0.0,0.0,0.0,0.0,0.0,0.0])
+            
+        else: 
+            ## c, h, n, a, b, d
+            train.policy_activation_final = ['sigmoid', 'sigmoid', 'sigmoid','sigmoid','sigmoid','sigmoid']
+            train.min_actions = torch.tensor([par.c_min, par.h_min, par.n_min, par.e_min, par.b_min, par.d_min],dtype=dtype,device=device) #minimum action value c, h, n, a, b, d
+            train.max_actions = torch.tensor([par.c_max, par.h_max, par.n_max, par.e_max, par.b_max, par.d_max],dtype=dtype,device=device) #maximum action value c, h, n, a, b, d
+            
+            train.epsilon_sigma = np.array([0.1,0.1,0.1,0.1,0.1,0.1]) #revisit this
+            train.epsilon_sigma_min = np.array([0.0,0.0,0.0,0.0,0.0,0.0]) 
         
         # c. misc
         train.terminal_actions_known = False # use terminal actions
@@ -178,8 +232,14 @@ class IncomeChannelsModelClass(DLSolverClass):
             train.tau = 0.4
             train.start_train_policy = 50
             
+        elif train.algoname == 'DeepFOC':
+            train.eq_w = torch.tensor([3.0, 3.0, 3.0, 3.0, 5.0],dtype=dtype,device=device) #revisit this
+            
+        elif train.algoname == 'DeepSimulate':
+            pass
+
         else:
-            raise NotImplementedError
+            NotImplementedError
             
     def allocate_train(self):
         
@@ -199,12 +259,12 @@ class IncomeChannelsModelClass(DLSolverClass):
         
         par = self.par
         
-        epsn_t,epsn_R,epsn_y = torch.meshgrid(par.epsn_t,par.epsn_R,par.epsn_y, indexing='ij')
+        psi,R,pi,q,h = torch.meshgrid(par.psi,par.R,par.pi,par.q,par.h, indexing='ij')
         
-        epsn_t_w,epsn_R_w,epsn_y_w = torch.meshgrid(par.epsn_t_w,par.epsn_R_w,par.epsn_y_w, indexing='ij')
+        psi_w,R_w,pi_w,q_w,h_w = torch.meshgrid(par.psi_w,par.R_w,par.pi_w,par.q_w,par.h_w, indexing='ij')
         
-        quad = torch.stack((epsn_t.flatten(), epsn_R.flatten(), epsn_y.flatten()), dim=1)
-        quad_w = epsn_t_w.flatten() * epsn_R_w.flatten() * epsn_y_w.flatten()
+        quad = torch.stack((psi.flatten(), R.flatten(), pi.flatten(), q.flatten(), h.flatten()), dim=1)
+        quad_w = psi_w.flatten() * R_w.flatten() * pi_w.flatten() * q_w.flatten() * h_w.flatten()
         
         return quad, quad_w
 
@@ -213,40 +273,49 @@ class IncomeChannelsModelClass(DLSolverClass):
         
         par = self.par
         
-        epsn_t = torch.exp(torch.normal(mean=par.mu_tau, std=par.sigma_tau, size=(par.T, N),))
-        epsn_R = torch.normal(par.sigma_R, par.mu_R, size=(par.T,N,))
-        epsn_y = torch.normal(par.sigma_y, par.mu_y, size=(par.T,N,))
-        
-        return torch.stack((epsn_t, epsn_R, epsn_y),dim=-1) 
+        psi = torch.exp(torch.normal(mean=par.psi_mu,std=par.psi_sigma, size=(par.T,N,)))
+        epsn_R = torch.exp(torch.normal(mean=par.R_mu, std=par.R_sigma, size=(par.T,N,)))
+        epsn_pi = torch.exp(torch.normal(par.pi_mu, par.pi_sigma, size=(par.T,N,)))
+        dist_Q = torch.distributions.StudentT(df=par.Q_nu, loc=par.Q_loc, scale=par.Q_scale)
+        epsn_Q = dist_Q.sample((par.T,N))
+        epsn_h = torch.exp(torch.normal(par.h_mu, par.h_sigma, size=(par.T,N,)))
+        return torch.stack((psi, epsn_R, epsn_pi, epsn_Q, epsn_h),dim=-1) 
     
     def draw_initial_states(self,N,training=False): #atm uniform
         
         par = self.par
         
-        # a. draw initial real money balance
-        m0 = torch_uniform(par.m_min, par.m_max, size = (N,))
+        # a. draw initial inflation pi
+        pi0 = torch_uniform(par.pi_min, par.pi_max, size = (N,))
         
-        # b. draw initial bond holdings
-        b0 = torch_uniform(par.b_min, par.b_max, size = (N,))
+        # b. draw initial nominal interest rate
+        R0 = torch_uniform(par.R_min, par.R_max, size = (N,))
         
-        # c. draw initial consumption
-        c0 = torch_uniform(par.c_min, par.c_max, size = (N,))
+        # c. draw initial equity return
+        eq0 = torch_uniform(par.eq_min, par.eq_max, size = (N,))
         
-        # d. draw initial inflation t-1
-        p0 = torch_uniform(par.p_min, par.p_max, size = (N,))
+        # d. draw initial wage
+        w0 = torch_uniform(par.w_min, par.w_max, size = (N,))
         
-        # e. draw initial hours worked
-        n0 = torch_uniform(par.n_min, par.n_max, size = (N,))
+        # e. draw initial equity holdings
+        e0 = torch_uniform(par.e_min, par.e_max, size = (N,))
         
-        # f. initial state for shocks
+        # f. draw initial bond holdings
+        b0 = torch_uniform(par.b_min, par.b_max, size = (N,))     
         
-        t0_eps = torch.exp(torch.normal(mean=par.mu_tau, std=par.sigma_tau, size=(N,)))
-        r0_eps = torch.normal(par.sigma_R, par.mu_R, size=(N,))
-        y0_eps = torch.normal(par.sigma_y, par.mu_y, size=(N,))
+        # f. draw initial money holdings
+        m0 = torch_uniform(par.m_min, par.m_max, size = (N,))  
         
-        par.epsn_R_prev = r0_eps
+        # h. draw initial debt
+        d0 = torch_uniform(par.d_min, par.d_max, size = (N,))
         
-        return torch.stack((m0, b0, c0, p0, n0, t0_eps, r0_eps, y0_eps),dim=-1)
+        # i. draw initial house prices
+        q0 = torch_uniform(par.q_min, par.q_max, size = (N,))
+        
+        # i. draw initial house holdings
+        h0 = torch_uniform(par.h_min, par.h_max, size = (N,))
+        
+        return torch.stack((pi0,R0,eq0,w0,e0,b0,m0,d0,q0,h0),dim=-1)
     
     def draw_exploration_shocks(self,epsilon_sigma,N): 
         """ draw exploration shockss """ 
@@ -267,11 +336,14 @@ class IncomeChannelsModelClass(DLSolverClass):
         
         # b. draw exo real money balance
         m_exo = torch_uniform(par.m_min, par.m_max, size = (N,))
+        
+        # c. draw exo real money balance
+        h_exo = torch_uniform(par.h_min, par.h_max, size = (N,))
     
-        # c. draw exo hours worked
+        # d. draw exo hours worked
         n_exo = torch_uniform(par.n_min, par.n_max, size = (N,))
         
-        return torch.stack((c_exo, m_exo, n_exo))
+        return torch.stack((c_exo, h_exo, m_exo, n_exo))
     
     outcomes = model_funcs.outcomes
     reward = model_funcs.reward

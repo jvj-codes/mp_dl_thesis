@@ -8,6 +8,8 @@ from https://github.com/NumEconCopenhagen/ConsumptionSaving/blob/master/consav/q
 
 import math
 import numpy as np
+import scipy.stats as stats
+import scipy.special as sp
 
 def gauss_hermite(n):
     """ gauss-hermite nodes
@@ -116,6 +118,34 @@ def log_normal_gauss_hermite(sigma,n=7,mu=None):
         x = np.exp(x+np.log(mu)-0.5*sigma**2)
 
     return x,w
+
+def student_t_gauss_hermite(nu, loc=0, scale=1, n=7):
+    """ Student's t-distribution Gauss-Hermite quadrature nodes and weights.
+
+    Args:
+        nu (float): Degrees of freedom for the t-distribution (>2 for finite variance).
+        loc (float): Location parameter (mean shift).
+        scale (float): Scale parameter (similar to standard deviation).
+        n (int): Number of quadrature points.
+
+    Returns:
+        x (numpy.ndarray): Quadrature nodes.
+        w (numpy.ndarray): Quadrature weights.
+    """
+
+    if nu <= 2:
+        raise ValueError("Degrees of freedom nu must be greater than 2 for a finite variance.")
+
+    # a. Gauss-Hermite nodes and weights
+    x, w = sp.roots_hermite(n)
+    w /= np.sqrt(np.pi)  # Normalize weights
+
+    # b. Transform nodes to Student's t-distribution
+    t_nodes = stats.t.ppf(stats.norm.cdf(x), df=nu)  # Use t-inverse CDF
+    x_transformed = loc + scale * t_nodes  # Apply location and scale
+
+    return x_transformed, w
+
 
 def create_PT_shocks(sigma_psi,Npsi,sigma_xi,Nxi,pi=0,mu=None):
     """ log-normal gauss-hermite nodes for permanent transitory model

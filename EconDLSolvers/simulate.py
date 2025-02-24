@@ -31,7 +31,6 @@ def simulate(model,ns,eps=None,exo_actions=None):
 		N = states.shape[1]
 		discount_factor = torch.zeros((par.T,N),dtype=dtype,device=device)	
 		for t in range(par.T):
-
 			# i. exogenous actions
 			if exo_actions is not None:			
 				actions[t] = exo_actions[t]
@@ -46,7 +45,7 @@ def simulate(model,ns,eps=None,exo_actions=None):
 			if not eps is None:
 				actions[t] = model.exploration(states[t],actions[t],eps[t],t=t)
 				actions[t] = actions[t].clamp(train.min_actions,train.max_actions)
-
+            
 			# iv. reward and discount factor
 			outcomes[t] = model.outcomes(states[t],actions[t],t=t)
 			reward[t] = model.reward(states[t],actions[t],outcomes[t],t=t)

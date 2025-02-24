@@ -8,7 +8,7 @@ Created on Tue Feb 11 09:25:53 2025
 #%load_ext autoreload
 #%autoreload 2
 
-from rl_project.MonetaryPolicy import MonetaryPolicyModel
+from rl_project.WealthBehavior import IncomeChannelsModel
 import numpy as np
 import sympy
 import matplotlib.pyplot as plt
@@ -28,5 +28,5 @@ model_DL = {}
 
 
 K_time = 3.0
-model_DL['DeepVPD'] = MonetaryPolicyModel.MonetaryPolicyModelClass(algoname='DeepVPD', device=device,train={'K_time': K_time})
+model_DL['DeepVPD'] = IncomeChannelsModel.WealthBehaviorModelClass(algoname='DeepVPD', device=device,train={'K_time': K_time})
 model_DL['DeepVPD'].solve(do_print=True)
