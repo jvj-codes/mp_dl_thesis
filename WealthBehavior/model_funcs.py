@@ -38,7 +38,7 @@ def util(c: float, h: float , L: float , m: float , par: tuple) -> float:
         
     """
 
-	return torch.log(c) + par.xhi * torch.log(m) + par.j * torch.log(h) - L**par.eta/par.eta 
+	return torch.log(c) + par.chi * torch.log(m) + par.j * torch.log(h) - L**par.eta/par.eta 
 
 def marg_util_c(c: float) -> float:
     return 1/c
@@ -109,51 +109,57 @@ def outcomes(model, states: torch.Tensor, actions: torch.Tensor, t0: float = 0, 
     # a. unpack model parameters and model settings for training
     par = model.par
     train = model.train
-    
-    # b. get consumption, bond saving, hours worked from actions
-    c_act = actions[...,0]  # Consumption
-    h_act = actions[...,1]  # Housing investment
-    n_act = actions[...,2]  # Hours worked
-    e_act = actions[...,3]  # Equity investment
-    b_act = actions[...,4]  # Bond investment
-    d_act = actions[...,5]  # New debt
 
     # c. get state observations
     pi = states[...,0]  # inflation at time t
     R = states[...,1]   # nominal interest rate t-1
     eq = states[...,2]  # return on equity t-1
     w  = states[...,3]  # wage at time t
-    e  = states[...,4]  # equity holdings t-1
-    b  = states[...,5]  # bond holdings t-1
-    m  = states[...,6]  # money holdings t-1
+    e  = states[...,4]  # Real equity holdings t-1
+    b  = states[...,5]  # Real bond holdings t-1
+    m  = states[...,6]  # Real money holdings t-1
     d  = states[...,7]  # debt t-1
     q  = states[...,8]  # house prices at time t
     h  = states[...,9]  # house holdings t-1
     
-    # d. get income/wealth 
-    if t is None: # when solving with DeepVPD or DeepFOC
-        if len(states.shape) == 9: # when solving
-            T,N = states.shape[:-1]
-            y = par.y.reshape(par.T,1).repeat(1,N) # life time/wealth income
-        else:
-            T,N = states.shape
-            y = par.y.reshape(par.T,1,1).repeat(1,N,train.Nquad)
-        
-        wealth = y[t0:T+t0] * n_act*w + (1+eq)*e + R*b + q*h + m 
+    # b. get consumption, bond saving, hours worked from actions
+    c_act = actions[...,0]  # Consumption
+    h_act = actions[...,1]  # House holdings investment
+    n_act = actions[...,2]  # Hours worked
+    e_act = actions[...,3]/(1+pi)  # Real Equity investment
+    b_act = actions[...,4]/(1+pi)  # Real Bond investment
+    d_act = actions[...,5]/(1+pi)  # Real New debt
     
-    else:
-        wealth = par.y[t] * n_act*w + (1+eq)*e + R*b + q*h + m 
+    # d. get income/wealth 
+    #if t is None: # when solving with DeepVPD or DeepFOC
+    #    if len(states.shape) == 10: # when solving
+    #        T,N = states.shape[:-1]
+    #        y = par.y.reshape(par.T,1).repeat(1,N) # life time/wealth income
+    #    else:
+    #        T = states.shape[0]
+    #        N = states.shape[1]
+    #        y = par.y.reshape(par.T,1,1).repeat(1,N,train.Nquad)
+    #        print(f"y shape: {y.shape}")
+    #    #print(f"shape of y: {y.shape}")
+    #    #print(f"shape of R: {R.shape}")
+    #    #T = R.shape[0]
+    #    
+    #    wealth = y[t0:T+t0] * n_act*w + (1+eq)*e/(1+pi) + R*b/(1+pi) + q*h + m/(1+pi) 
+    #
+    #else:
+    #    wealth = par.y[t] * n_act*w + (1+eq)*e/(1+pi) + R*b/(1+pi) + q*h + m/(1+pi) 
+    wealth = n_act*w + (1+eq)*e/(1+pi) + R*b/(1+pi) + q*h + m/(1+pi) 
         
     # the money holdings transition
-    m = wealth - c_act - q*h_act - e_act - b_act - d*(R-1+par.rp) - par.lbda * d + d_act - (1-par.lbda) * d
-    m = m/(1+pi) #real money holdings
+    m = wealth - c_act - q*h_act - e_act - b_act - d*(R-1+par.rp) - par.lbda * d/(1+pi) + d_act - (1-par.lbda) * d/(1+pi)
     
     return torch.stack((c_act, m, h_act, n_act),dim=-1)
         
 #%% Reward
 
-def reward(model, outcomes: torch.Tensor, t0: int = 0 , t=None) -> float:
+def reward(model,states,actions,outcomes,t0=0,t=None) -> float:
     par = model.par
+    train = model.train
     
     # a. 
     c = outcomes[...,0]
@@ -162,7 +168,7 @@ def reward(model, outcomes: torch.Tensor, t0: int = 0 , t=None) -> float:
     n = outcomes[...,3]
     
     # b. utility
-    u = util_evans_hon(c, m, h, n, par)
+    u = util(c, m, h, n, par)
     
     # c. finalize
     return u 
@@ -268,15 +274,15 @@ def state_trans(model,state_trans_pd,shocks,t=None):
         epsn_h_plus  = auxilliary.expand_to_states(epsn_h_plus,state_trans_pd)
 	
     # c. next period 
-    w_plus = par.gamma * psi_plus * w_pd #next period wage
-    
     pi_plus = (1-par.rhopi)*par.pi_star + par.rhopi*pi_pd + epsn_pi_plus #next period inflation
     
     R_plus = epsn_R_plus * (par.R_star -1)*(pi_plus/par.pi_star)**((par.A*par.R_star)/(par.R_star -1)) + 1 #next period nominal interest rate adjusted by centralbank
     
     eq_plus = pi_plus - R_plus + epsn_Q_plus #next period equity returns
     
-    q_plus = par.q0 + par.q_h*(eq_plus - R_plus) + q_pd + epsn_h_plus #next period house prices
+    q_plus = (par.q0 + par.q_h*(eq_plus - R_plus) + q_pd + epsn_h_plus)/(1+pi_plus) #next period real house prices
+    
+    w_plus = (par.gamma * psi_plus * w_pd)/(1+pi_plus) #next period wage
 	
     # d. finalize
     states_plus = torch.stack((pi_plus, R_plus, eq_plus, w_plus, e_pd, b_pd, m_pd, d_pd, q_plus, h_pd),dim=-1)

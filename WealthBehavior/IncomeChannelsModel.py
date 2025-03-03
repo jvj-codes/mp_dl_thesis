@@ -42,15 +42,18 @@ class WealthBehaviorModelClass(DLSolverClass):
         par.chi = 0.1       #relative preference weight of money holdings
         par.j = 0.1         #relative preference weight of house holdings
         par.A = 1.3         #taylor rule coefficient
-        par.p_star = 1.01   #target gross high-inflation rate (4% per annum)
-        par.R_star = par.beta / par.p_star #target nominal interest rate
-        par.rho_p = 0.3     #persistence of inflation 
+        par.pi_star = 1.01  #target gross high-inflation rate (4% per annum)
+        par.R_star = par.beta / par.pi_star #target nominal interest rate
+        par.rhopi = 0.3     #persistence of inflation 
         par.gamma = 1.03    #gross wage growth
         par.eta = 0.7       #fraction of wealth to determine limit of debt
         par.vartheta = 0.4  #fraction of wage income to determine limit of debt
         par.lbda = 0.2      #minimum payment due
         par.varphi = 1.01   #labor supply schedule
         par.rp = 0.03       #risk premium 3%
+        par.q0 = 0.001      #initial value house price
+        par.q_h = 0.5       #spread importance
+
         
         # wealth
         par.y_base = 1.0 # base
@@ -87,37 +90,37 @@ class WealthBehaviorModelClass(DLSolverClass):
         par.R_min = 0.000 # minimum interest rate of 0%
         par.R_max = 0.100 # maximum interest rate of 10%
         
-        par.eq_min = -0.3 # minium return on equity -30%
-        par.eq_max = 0.3  # maximum return on equity 30%
+        par.eq_min = -0.30 # minium return on equity -30%
+        par.eq_max = 0.30  # maximum return on equity 30%
         
-        par.w_min = 0.0    # minimum wage
-        par.w_max = np.inf # maximum wage, no bounds?
+        par.w_min = 0.000    # minimum wage
+        par.w_max = 0.999 # maximum wage, no bounds?
         
         par.e_min = 0.000 # minimum holdings of equity
-        par.e_max = 4.000 # maximum holdings of equity
+        par.e_max = 0.999 # maximum holdings of equity
         
         par.b_min = 0.000 # minimum holdings of bonds
-        par.b_max = 4.000 # maximum holdings of bonds
+        par.b_max = 0.999 # maximum holdings of bonds
         
-        par.m_min = 0.001
-        par.m_max = 12
+        par.m_min = 0.000
+        par.m_max = 0.999
         
-        par.q_min = 0.000 # minimum holdings of bonds
-        par.q_max = 4.000 # maximum holdings of bonds
+        par.q_min = 0.000 # minimum house prices
+        par.q_max = 0.999 # maximum house prices
         
         
         ###
-        par.c_min = 0.995
-        par.c_max = 1.005
+        par.c_min = 0.000
+        par.c_max = 0.999
         
-        par.n_min = 0.990
-        par.n_max = 1.010
+        par.n_min = 0.000
+        par.n_max = 0.999
         
         par.h_min = 0.000 # minimum house holdings
-        par.h_max = 4.000 # maximum house holdings
+        par.h_max = 0.999 # maximum house holdings
         
         par.d_min = 0.000 # minimum debt
-        par.d_max = 4.000 # maximum debt (will be determined by constraint ultimately)
+        par.d_max = 0.999 # maximum debt (will be determined by constraint ultimately)
         
         # b. solver settings
         
@@ -156,8 +159,8 @@ class WealthBehaviorModelClass(DLSolverClass):
             par.Nactions = 6
         
         #life time wealth
-        par.y = torch.zeros(par.T,dtype=dtype,device=device)	
-        par.y[0] = par.y_base
+        par.y = torch.ones(par.T,dtype=dtype,device=device)	
+        #par.y[0] = par.y_base
         
         # c. quadrature
         par.psi, par.psi_w  = misc.log_normal_gauss_hermite(sigma = par.psi_sigma, n = par.Npsi, mu = par.psi_mu)
@@ -218,7 +221,7 @@ class WealthBehaviorModelClass(DLSolverClass):
             train.min_actions = torch.tensor([par.c_min, par.h_min, par.n_min, par.e_min, par.b_min, par.d_min],dtype=dtype,device=device) #minimum action value c, h, n, a, b, d
             train.max_actions = torch.tensor([par.c_max, par.h_max, par.n_max, par.e_max, par.b_max, par.d_max],dtype=dtype,device=device) #maximum action value c, h, n, a, b, d
             
-            train.epsilon_sigma = np.array([0.1,0.1,0.1,0.1,0.1,0.1]) #revisit this
+            train.epsilon_sigma = np.array([0.1,0.1,0.1,0.1,0.1,0.1]) #revisit this explorations (policy function)
             train.epsilon_sigma_min = np.array([0.0,0.0,0.0,0.0,0.0,0.0]) 
         
         # c. misc
