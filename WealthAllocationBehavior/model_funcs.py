@@ -180,7 +180,7 @@ def state_trans_pd(model,states,actions,outcomes,t0=0,t=None):
     x = m + w*n_act + alpha_d*par.vartheta*w*n_act
     d_n = alpha_d*par.vartheta*w*n_act
     b = alpha_b * x
-    e = alpha_e * x
+    e = alpha_e*(1-alpha_b) * x
     
     return torch.stack((b, e, h, w, q, d, d_n, pi),dim=-1)
 
