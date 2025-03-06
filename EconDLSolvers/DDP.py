@@ -11,7 +11,7 @@ import torch.multiprocessing
 import torch.distributed
 from torch.distributed import init_process_group, destroy_process_group
 
-from .simulate import simulate
+from rl_project.EconDLSolvers.simulate import simulate
 
 def solve_DDP(model,do_print=False,do_print_all=False,port=None):
 	""" Solve model using Distributed Data Parallel"""

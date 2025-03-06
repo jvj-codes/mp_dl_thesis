@@ -2,7 +2,7 @@ import numpy as np
 import torch
 
 # local
-from . import auxilliary as aux
+from rl_project.EconDLSolvers import auxilliary as aux
 
 value_loss_f = aux.value_loss_f
 scheduler_step = aux.scheduler_step

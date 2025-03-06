@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from .auxilliary import compute_transfer
+from rl_project.EconDLSolvers.auxilliary import compute_transfer
 
 def convergence_plot(model,
                      y_fac=1.0,ylabel='transfer',

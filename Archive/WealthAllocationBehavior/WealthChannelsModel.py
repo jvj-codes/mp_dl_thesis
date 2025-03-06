@@ -9,11 +9,12 @@ import os
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE' # without this python may crash when plotting from matplotlib
 import numpy as np
 import torch
+import math
 torch.set_warn_always(True)
 
 # local
-from rl_project.WealthBehavior import misc
-from rl_project.WealthBehavior import model_funcs
+from rl_project.WealthAllocationBehavior import misc
+from rl_project.WealthAllocationBehavior import model_funcs
 from rl_project.EconDLSolvers import DLSolverClass, torch_uniform
 from rl_project.EconDLSolvers import auxilliary
 
@@ -27,38 +28,33 @@ class WealthBehaviorModelClass(DLSolverClass):
         
         par = self.par
         sim = self.sim
+        train = self.train
+        dtype = train.dtype
+        device = train.device
         
         par.full = full if not full is None else torch.cuda.is_available()
         par.seed = 1
         
         # a. model
-        par.T = 5 # time 
+        par.T = 100 # time 
         
         ## parameters of the model
-        
         par.beta = 0.99     #discount factor
-        par.phi = 1         #inverse of Frisch elasticity of labor supply
-        par.chi = 0.1       #relative preference weight of money holdings
         par.j = 0.1         #relative preference weight of house holdings
         par.A = 1.3         #taylor rule coefficient
-        par.pi_star = 1.01  #target gross high-inflation rate (4% per annum)
-        par.R_star = par.beta / par.pi_star #target nominal interest rate
+        par.pi_star = math.log(1.80) #target gross high-inflation rate (
+        par.R_star = par.beta / math.exp(par.pi_star) #target nominal interest rate
         par.rhopi = 0.3     #persistence of inflation 
         par.gamma = 1.03    #gross wage growth
         par.vartheta = 0.7  #fraction of wealth to determine limit of debt
         par.eta = 0.4       #labor supply schedule
         par.lbda = 0.2      #minimum payment due
         par.varphi = 1.01   #labor supply schedule
-        par.rp = 0.03       #risk premium 3%
         par.q0 = 0.001      #initial value house price
         par.q_h = 0.5       #spread importance
+        par.eps_rp = 0.02   #risk premium
 
-        
-        # wealth
-        par.y_base = 1.0 # base
-        
         ## mean and std of shocks
-        
         par.psi_sigma = 0.0005 #wage shock (std std.) log_normal distributed
         par.psi_mu = 1         #wage shock mean one 
         par.Npsi = 4
@@ -86,12 +82,6 @@ class WealthBehaviorModelClass(DLSolverClass):
         par.pi_min = 0.000 # minimum inflation of 0% 
         par.pi_max = 0.080 # maximum inflation of 8%
         
-        par.R_min = 0.000 # minimum interest rate of 0%
-        par.R_max = 0.100 # maximum interest rate of 10%
-        
-        par.eq_min = -0.30 # minium return on equity -30%
-        par.eq_max = 0.30  # maximum return on equity 30%
-        
         par.w_min = 0.000    # minimum wage
         par.w_max = 0.999 # maximum wage, no bounds?
         
@@ -105,7 +95,7 @@ class WealthBehaviorModelClass(DLSolverClass):
         par.Nactions = 5
         
         # outcomes and actions
-        par.Noutcomes = 3 # consumption, labor, house holdings
+        par.Noutcomes = 3 # consumption, house holdings, labor
         par.KKT = False ## use KKT conditions (for DeepFOC)
         par.NDC = 0 # number of discrete choices
         
@@ -124,17 +114,13 @@ class WealthBehaviorModelClass(DLSolverClass):
         device = train.device
         
         if not par.full: # for solving without GPU
-            par.T = 5
+            par.T = 100
             sim.N = 10_000
             
         if par.KKT:
-            par.Nactions = 7
+            par.Nactions = 7 #revisit when focs are done
         else:
-            par.Nactions = 6
-        
-        #life time wealth
-        par.y = torch.ones(par.T,dtype=dtype,device=device)	
-        #par.y[0] = par.y_base
+            par.Nactions = 5
         
         # c. quadrature
         par.psi, par.psi_w  = misc.log_normal_gauss_hermite(sigma = par.psi_sigma, n = par.Npsi, mu = par.psi_mu)
@@ -167,6 +153,8 @@ class WealthBehaviorModelClass(DLSolverClass):
         sim.actions = torch.zeros((par.T,sim.N,par.Nactions),dtype=dtype,device=device)
         sim.reward = torch.zeros((par.T,sim.N),dtype=dtype,device=device)
         
+        sim.R = np.nan
+        
     def setup_train(self):
         
         par = self.par
@@ -185,18 +173,13 @@ class WealthBehaviorModelClass(DLSolverClass):
             train.policy_activation_final = ['sigmoid', 'sigmoid', 'sigmoid','sigmoid','sigmoid','sigmoid','softplus']
             train.min_actions = torch.tensor([0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000],dtype=dtype,device=device) #minimum action value n, alpha_d, alpha_e, alpha_b, alpha_h
             train.max_actions = torch.tensor([0.9999, 0.9999, 0.9999, 0.9999, 0.9999, 0.9999, np.inf],dtype=dtype,device=device) #maximum action value n, alpha_d, alpha_e, alpha_b, alpha_h
-           
-            train.epsilon_sigma = np.array([0.1,0.1,0.1,0.1,0.1,0.1,0.0]) #revisit this
-            train.epsilon_sigma_min = np.array([0.0,0.0,0.0,0.0,0.0,0.0,0.0])
             
         else: 
             ## n, alpha_d, alpha_e, alpha_b, alpha_h
-            train.policy_activation_final = ['sigmoid', 'sigmoid', 'sigmoid','sigmoid','sigmoid','sigmoid']
-            train.min_actions = torch.tensor([0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000],dtype=dtype,device=device) #minimum action value n, alpha_d, alpha_e, alpha_b, alpha_h
-            train.max_actions = torch.tensor([0.9999, 0.9999, 0.9999, 0.9999, 0.9999, 0.9999],dtype=dtype,device=device) #maximum action value n, alpha_d, alpha_e, alpha_b, alpha_h
+            train.policy_activation_final = ['sigmoid', 'sigmoid', 'sigmoid','sigmoid','sigmoid']
+            train.min_actions = torch.tensor([0.0000, 0.0000, 0.0000, 0.0000, 0.0000],dtype=dtype,device=device) #minimum action value n, alpha_d, alpha_e, alpha_b, alpha_h
+            train.max_actions = torch.tensor([0.9999, 0.9999, 0.9999, 0.9999, 0.9999],dtype=dtype,device=device) #maximum action value n, alpha_d, alpha_e, alpha_b, alpha_h
             
-            train.epsilon_sigma = np.array([0.1,0.1,0.1,0.1,0.1,0.1]) #revisit this explorations (policy function)
-            train.epsilon_sigma_min = np.array([0.0,0.0,0.0,0.0,0.0,0.0]) 
         
         # c. misc
         train.terminal_actions_known = False # use terminal actions
@@ -209,14 +192,19 @@ class WealthBehaviorModelClass(DLSolverClass):
             train.tau = 0.4
             train.start_train_policy = 50
             
-        elif train.algoname == 'DeepFOC':
+        if train.algoname == 'DeepFOC':
             train.eq_w = torch.tensor([3.0, 3.0, 3.0, 3.0, 5.0],dtype=dtype,device=device) #revisit this
             
-        elif train.algoname == 'DeepSimulate':
+        if train.algoname == 'DeepSimulate':
             pass
-
         else:
-            NotImplementedError
+            if par.KKT:
+                train.epsilon_sigma = np.array([0.1,0.1,0.1,0.1,0.1,0.1,0.0]) #revisit this
+                train.epsilon_sigma_min = np.array([0.0,0.0,0.0,0.0,0.0,0.0,0.0])
+            else:
+                train.epsilon_sigma = np.array([0.1,0.1,0.1,0.1,0.1]) #revisit this
+                train.epsilon_sigma_min = np.array([0.0,0.0,0.0,0.0,0.0])
+
             
     def allocate_train(self):
         
@@ -266,33 +254,27 @@ class WealthBehaviorModelClass(DLSolverClass):
         pi0 = torch_uniform(par.pi_min, par.pi_max, size = (N,))
         
         # b. draw initial nominal interest rate
-        R0 = (par.R_star -1)*(pi0/par.pi_star)**((par.A*par.R_star)/(par.R_star -1)) + 1
+        R0 = torch.exp(torch.normal(mean=par.R_mu, std=par.R_sigma, size=(N,))) 
+        R0 = R0*(par.R_star -1)*(pi0/par.pi_star)**((par.A*par.R_star)/(par.R_star -1)) + 1
         
         # c. draw initial equity return
-        R_e0 = 0
+        R_e0 = torch.zeros((N,))
         
-        # d. draw initial house price
-        q0 = 1
+        # d. draw initial wage
+        w0 = torch.ones((N,))
         
-        # e. draw initial wage
-        w0 = torch_uniform(par.e_min, par.e_max, size = (N,))
+        # e. draw initial money holdings
+        m0 = torch.ones((N,))
         
-        # f. draw initial bond holdings
-        b0 = torch_uniform(par.b_min, par.b_max, size = (N,))     
+        # f. draw initial debt
+        d0 = torch.zeros((N,))
         
-        # f. draw initial money holdings
-        m0 = 0
+        # g. draw initial house prices
+        epsn_h0 = torch.exp(torch.normal(par.h_mu, par.h_sigma, size=(N,)))
+        q0 = (par.q0 + par.q_h*(R_e0 - R0) + epsn_h0)/(1+pi0)
         
-        # h. draw initial debt
-        d0 = 0
         
-        # i. draw initial house prices
-        q0 = torch_uniform(par.q_min, par.q_max, size = (N,))
-        
-        # i. draw initial house holdings
-        h0 = torch_uniform(par.h_min, par.h_max, size = (N,))
-        
-        return torch.stack((pi0,R0,eq0,w0,e0,b0,m0,d0,q0,h0),dim=-1)
+        return torch.stack((w0,m0,d0,q0,pi0,R0,R_e0),dim=-1)
     
     def draw_exploration_shocks(self,epsilon_sigma,N): 
         """ draw exploration shockss """ 
@@ -309,26 +291,26 @@ class WealthBehaviorModelClass(DLSolverClass):
         par = self.par 
         
         # a. draw exo labor time spend
-        n_exo = torch_uniform(0.000, 0.999, size = (N,))
+        n_exo = torch_uniform(0.00001, 0.999, size = (N,))
         
         # b. draw exo debt share
-        alph_d_exo = torch_uniform(0.000, 0.999, size = (N,))
+        alph_d_exo = torch_uniform(0.00001, 0.999, size = (N,))
     
         # c. draw exo bond share
-        alph_b_exo = torch_uniform(0.000, 0.999, size = (N,))
+        alph_b_exo = torch_uniform(0.00001, 0.999, size = (N,))
         
         # d. draw exo equity share
-        alph_e_exo = torch_uniform(0.000, 0.999, size = (N,))
+        alph_e_exo = torch_uniform(0.00001, 0.999, size = (N,))
         
         # e. draw exo hpise share
-        alph_h_exo = torch_uniform(0.000, 0.999, size = (N,))
+        alph_h_exo = torch_uniform(0.00001, 0.999, size = (N,))
         return torch.stack((n_exo, alph_d_exo, alph_e_exo, alph_b_exo, alph_h_exo))
     
     outcomes = model_funcs.outcomes
     reward = model_funcs.reward
     discount_factor = auxilliary.discount_factor
 	
-    terminal_reward_pd = auxilliary.terminal_reward_pd
+    #terminal_reward_pd = auxilliary.terminal_reward_pd
 		
     state_trans_pd = model_funcs.state_trans_pd
     state_trans = model_funcs.state_trans

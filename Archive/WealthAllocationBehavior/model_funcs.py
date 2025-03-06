@@ -11,7 +11,7 @@ from rl_project.EconDLSolvers import auxilliary
 
 #%% Utility
 
-def util(c: float, h: float , n: float , par: tuple) -> float:
+def utility(c, h, n, par):
 	"""
     utility function 
     
@@ -50,7 +50,7 @@ def inverse_marg_util(u: float) -> float:
     return 1/u
 
 #%% Outcome
-def outcomes(model, states: torch.Tensor, actions: torch.Tensor, t0: float = 0, t=None) -> torch.Tensor:
+def outcomes(model, states, actions, t0 = 0, t=None):
     """
     
 
@@ -74,6 +74,7 @@ def outcomes(model, states: torch.Tensor, actions: torch.Tensor, t0: float = 0, 
 
     """
     
+    print("outcome function is running")
     # a. unpack model parameters and model settings for training
     par = model.par
     train = model.train
@@ -96,7 +97,6 @@ def outcomes(model, states: torch.Tensor, actions: torch.Tensor, t0: float = 0, 
     alpha_h = actions[...,4]  # house share
 
     # d. calculate outcomes 
-    ## funds avaliable
     x = m + w*n_act + alpha_d*par.vartheta*w*n_act
     
     ## housing
@@ -109,7 +109,7 @@ def outcomes(model, states: torch.Tensor, actions: torch.Tensor, t0: float = 0, 
         
 #%% Reward
 
-def reward(model,states,actions,outcomes,t0=0,t=None) -> float:
+def reward(model,states,actions,outcomes,t0=0,t=None):
     par = model.par
     train = model.train
     
@@ -119,7 +119,8 @@ def reward(model,states,actions,outcomes,t0=0,t=None) -> float:
     n = outcomes[...,2]
     
     # b. utility
-    u = util(c, h, n, par)
+    u = utility(c, h, n, par)
+    print(u)
     
     # c. finalize
     return u 
@@ -157,8 +158,6 @@ def state_trans_pd(model,states,actions,outcomes,t0=0,t=None):
     c = outcomes[...,0]
     h = outcomes[...,1]
     n = outcomes[...,2]
-    b = outcomes[...,3]
-    e = outcomes[...,4]
     
     # c. get state observations
     w = states[...,0]  # inflation at time t
@@ -205,7 +204,7 @@ def state_trans(model,state_trans_pd,shocks,t=None):
     psi_plus = shocks[:,0]
     epsn_R_plus = shocks[:,1]
     epsn_pi_plus = shocks[:,2]
-    epsn_q_plus = shocks[:,3] 
+    epsn_e_plus = shocks[:,3] 
     epsn_h_plus = shocks[:,4]
     
 	# b. adjust shape and scale quadrature nodes (when solving)
@@ -223,17 +222,17 @@ def state_trans(model,state_trans_pd,shocks,t=None):
         psi_plus     = auxilliary.expand_to_states(psi_plus,state_trans_pd)
         epsn_R_plus  = auxilliary.expand_to_states(epsn_R_plus,state_trans_pd)
         epsn_pi_plus = auxilliary.expand_to_states(epsn_pi_plus,state_trans_pd)
-        epsn_q_plus  = auxilliary.expand_to_states(epsn_q_plus,state_trans_pd)
+        epsn_e_plus  = auxilliary.expand_to_states(epsn_e_plus,state_trans_pd)
         epsn_h_plus  = auxilliary.expand_to_states(epsn_h_plus,state_trans_pd)
 	
     # c. calculate inflation, interest rate, return on investment
-    pi_plus = torch.exp((1-par.rhopi)*torch.log(par.pi_star) + par.rhopi*torch.log(pi_pd) + epsn_pi_plus) #next period inflation
+    pi_plus = torch.exp((1-par.rhopi)*par.pi_star + par.rhopi*torch.log(pi_pd) + epsn_pi_plus) #next period inflation
     
     R_plus = epsn_R_plus * (par.R_star -1)*(pi_plus/par.pi_star)**((par.A*par.R_star)/(par.R_star -1)) + 1 #next period nominal interest rate adjusted by centralbank
     
-    R_e_plus = 1+pi_plus - R_plus + epsn_q_plus #next period equity returns
+    R_e_plus = 1+pi_plus - R_plus + epsn_e_plus #next period equity returns
     
-    q_plus = (par.q0 + par.q_h*(R_e_plus - R_plus) + q_pd + epsn_h_plus)/(1+pi_plus) #next period real house prices
+    q_plus = (par.q0 + par.q_h*(R_e_plus - R_plus) + q_pd + epsn_h_plus) #next period real house prices
     
     w_plus = (par.gamma * psi_plus * w_pd)/(1+pi_plus) #next period wage
 	
@@ -242,7 +241,7 @@ def state_trans(model,state_trans_pd,shocks,t=None):
     R_d_plus = R_plus + par.eps_rp
     
     # d. calculate money holdings next period and rolling debt
-    m_plus = R_plus*b_pd/(1+pi_plus) + R_e_plus*e_pd/(1+pi_plus) + R_q_plus*h_pd - (par.lbda + R_d_plus-1)*d_pd/(1+pi_plus)
+    m_plus = R_plus*b_pd/(1+pi_plus) + R_e_plus*e_pd/(1+pi_plus) + R_q_plus*h_pd/(1+pi_plus) - (par.lbda + R_d_plus-1)*d_pd/(1+pi_plus)
     d_plus = d_n_pd/(1+pi_plus) + (1-par.lbda)*d_pd/(1+pi_plus)    
     
     # d. finalize
@@ -251,111 +250,111 @@ def state_trans(model,state_trans_pd,shocks,t=None):
 
 #%% Equations for DeepFOC
 
-def eval_equations_FOC(model,states,states_plus,actions,actions_plus,outcomes,outcomes_plus):
+# def eval_equations_FOC(model,states,states_plus,actions,actions_plus,outcomes,outcomes_plus):
     
-    par = model.par
+#     par = model.par
     
-    sq_equations = eval_KKT(model,states,states_plus,actions,actions_plus,outcomes,outcomes_plus)
+#     sq_equations = eval_KKT(model,states,states_plus,actions,actions_plus,outcomes,outcomes_plus)
     
-    return sq_equations
+#     return sq_equations
 
-def eval_KKT(model,states,states_plus,actions,actions_plus,outcomes,outcomes_plus):
+# def eval_KKT(model,states,states_plus,actions,actions_plus,outcomes,outcomes_plus):
     
-    par = model.par
-    train = model.train
-    beta = auxilliary.discount_factor(model,states)
+#     par = model.par
+#     train = model.train
+#     beta = auxilliary.discount_factor(model,states)
     
-    # a. states at time t
-    pi = states[...,0]  # inflation at time t
-    R = states[...,1]   # nominal interest rate t-1
-    eq = states[...,2]  # return on equity t-1
-    w  = states[...,3]  # wage at time t
-    e  = states[...,4]  # equity holdings t-1
-    b  = states[...,5]  # bond holdings t-1
-    m  = states[...,6]  # money holdings t-1
-    d  = states[...,7]  # debt t-1
-    q  = states[...,8]  # house prices at time t
-    h  = states[...,9]  # house holdings t-1
+#     # a. states at time t
+#     pi = states[...,0]  # inflation at time t
+#     R = states[...,1]   # nominal interest rate t-1
+#     eq = states[...,2]  # return on equity t-1
+#     w  = states[...,3]  # wage at time t
+#     e  = states[...,4]  # equity holdings t-1
+#     b  = states[...,5]  # bond holdings t-1
+#     m  = states[...,6]  # money holdings t-1
+#     d  = states[...,7]  # debt t-1
+#     q  = states[...,8]  # house prices at time t
+#     h  = states[...,9]  # house holdings t-1
     
-    # b. states at time t+1
-    pi_plus = states_plus[...,0]  # inflation at time t
-    R_plus = states_plus[...,1]   # nominal interest rate t-1
-    eq_plus = states_plus[...,2]  # return on equity t-1
-    w_plus  = states_plus[...,3]  # wage at time t
-    e_plus  = states_plus[...,4]  # equity holdings t-1
-    b_plus  = states_plus[...,5]  # bond holdings t-1
-    m_plus  = states_plus[...,6]  # money holdings t-1
-    d_plus  = states_plus[...,7]  # debt t-1
-    q_plus  = states_plus[...,8]  # house prices at time t
-    h_plus  = states_plus[...,9]  # house holdings t-1
+#     # b. states at time t+1
+#     pi_plus = states_plus[...,0]  # inflation at time t
+#     R_plus = states_plus[...,1]   # nominal interest rate t-1
+#     eq_plus = states_plus[...,2]  # return on equity t-1
+#     w_plus  = states_plus[...,3]  # wage at time t
+#     e_plus  = states_plus[...,4]  # equity holdings t-1
+#     b_plus  = states_plus[...,5]  # bond holdings t-1
+#     m_plus  = states_plus[...,6]  # money holdings t-1
+#     d_plus  = states_plus[...,7]  # debt t-1
+#     q_plus  = states_plus[...,8]  # house prices at time t
+#     h_plus  = states_plus[...,9]  # house holdings t-1
     
-    # c. outcomes at time t
-    c = outcomes[...,0]
-    m = outcomes[...,1]
-    h = outcomes[...,2]
-    n = outcomes[...,3]
+#     # c. outcomes at time t
+#     c = outcomes[...,0]
+#     m = outcomes[...,1]
+#     h = outcomes[...,2]
+#     n = outcomes[...,3]
     
-    # d. get actions
-    c_act = actions[...,0] # Consumption
-    h_act = actions[...,1]  # Housing investment
-    n_act = actions[...,2] # Hours worked
-    e_act = actions[...,3]  # Equity investment
-    b_act = actions[...,4]  # Bond investment
-    d_act = actions[...,5]  # New debt
+#     # d. get actions
+#     c_act = actions[...,0] # Consumption
+#     h_act = actions[...,1]  # Housing investment
+#     n_act = actions[...,2] # Hours worked
+#     e_act = actions[...,3]  # Equity investment
+#     b_act = actions[...,4]  # Bond investment
+#     d_act = actions[...,5]  # New debt
     
-    # e. outcomes at time t
-    c_plus = outcomes_plus[...,0]
-    m_plus = outcomes_plus[...,1]
-    h_plus = outcomes_plus[...,2]
-    n_plus = outcomes_plus[...,3]
+#     # e. outcomes at time t
+#     c_plus = outcomes_plus[...,0]
+#     m_plus = outcomes_plus[...,1]
+#     h_plus = outcomes_plus[...,2]
+#     n_plus = outcomes_plus[...,3]
     
-    # f. multiplier at time t
-    mu_t = actions[...,6]
+#     # f. multiplier at time t
+#     mu_t = actions[...,6]
     
-    # g. compute marginal utility at time t
-    marg_util_c_t = marg_util_c(c)
-    marg_util_m_t = marg_util_c(m)
-    marg_util_h_t = marg_util_c(h)
-    marg_util_n_t = marg_util_c(n)
+#     # g. compute marginal utility at time t
+#     marg_util_c_t = marg_util_c(c)
+#     marg_util_m_t = marg_util_c(m)
+#     marg_util_h_t = marg_util_c(h)
+#     marg_util_n_t = marg_util_c(n)
     
-    # h. compute marginal utility at time t+1
-    marg_util_c_plus = marg_util_c(c_plus)
-    marg_util_m_plus = marg_util_c(m_plus)
-    marg_util_h_plus = marg_util_c(h_plus)
-    marg_util_n_plus = marg_util_c(n_plus)
+#     # h. compute marginal utility at time t+1
+#     marg_util_c_plus = marg_util_c(c_plus)
+#     marg_util_m_plus = marg_util_c(m_plus)
+#     marg_util_h_plus = marg_util_c(h_plus)
+#     marg_util_n_plus = marg_util_c(n_plus)
     
-    # i. first order conditions
-    ## 1. compute expected marginal utility at time t+1
-    exp_marg_util_plus = torch.sum(train.quad_w[None,None,:]*marg_util_c_plus,dim=-1)
+#     # i. first order conditions
+#     ## 1. compute expected marginal utility at time t+1
+#     exp_marg_util_plus = torch.sum(train.quad_w[None,None,:]*marg_util_c_plus,dim=-1)
     
-    ## 2. euler equation
-    FOC_c_ = inverse_marg_util(beta[:-1]*(1+eq_plus)*exp_marg_util_plus) * c - 1
-    FOC_c_terminal = torch.zeros_like(FOC_c_[-1])
-    FOC_c = torch.cat((FOC_c_,FOC_c_terminal[None,...]),dim=0)
+#     ## 2. euler equation
+#     FOC_c_ = inverse_marg_util(beta[:-1]*(1+eq_plus)*exp_marg_util_plus) * c - 1
+#     FOC_c_terminal = torch.zeros_like(FOC_c_[-1])
+#     FOC_c = torch.cat((FOC_c_,FOC_c_terminal[None,...]),dim=0)
     
-    ## 3. money demand
-    FOC_m_ = (c_act - 1/(mu_t*par.eta))*par.chi - m
-    FOC_m_terminal = torch.zeros_like(FOC_m_[-1])
-    FOC_m = torch.cat((FOC_m_,FOC_m_terminal[None,...]),dim=0)
+#     ## 3. money demand
+#     FOC_m_ = (c_act - 1/(mu_t*par.eta))*par.chi - m
+#     FOC_m_terminal = torch.zeros_like(FOC_m_[-1])
+#     FOC_m = torch.cat((FOC_m_,FOC_m_terminal[None,...]),dim=0)
     
-    ## 4. housing demand
-    FOC_h_ = (c_act/q - 1/(mu_t*par.eta*q))*par.j - h_act
-    FOC_h_terminal = torch.zeros_like(FOC_h_[-1])
-    FOC_h = torch.cat((FOC_h_,FOC_h_terminal[None,...]),dim=0)
+#     ## 4. housing demand
+#     FOC_h_ = (c_act/q - 1/(mu_t*par.eta*q))*par.j - h_act
+#     FOC_h_terminal = torch.zeros_like(FOC_h_[-1])
+#     FOC_h = torch.cat((FOC_h_,FOC_h_terminal[None,...]),dim=0)
     
-    ## 5. labor supply
-    FOC_n_ = 1/(1/c_act - mu_t*par.vartheta)*n**(par.varphi-1) - w
-    FOC_n_terminal = torch.zeros_like(FOC_n_[-1])
-    FOC_n = torch.cat((FOC_n_,FOC_n_terminal[None,...]),dim=0)
+#     ## 5. labor supply
+#     FOC_n_ = 1/(1/c_act - mu_t*par.vartheta)*n**(par.varphi-1) - w
+#     FOC_n_terminal = torch.zeros_like(FOC_n_[-1])
+#     FOC_n = torch.cat((FOC_n_,FOC_n_terminal[None,...]),dim=0)
     
-    # j. borrowing constraint
-    constraint = par.eta*(q*h_act + e_act + m + b_act) + par.vartheta - (1+par.eta)*d_act
-    slackness_ = constraint[-1] * mu_t[:-1]
-    slackness_terminal = constraint[-1]
-    slackness = torch.cat((slackness_,slackness_terminal[None,...]),dim=0)
+#     # j. borrowing constraint
+#     constraint = par.eta*(q*h_act + e_act + m + b_act) + par.vartheta - (1+par.eta)*d_act
+#     slackness_ = constraint[-1] * mu_t[:-1]
+#     slackness_terminal = constraint[-1]
+#     slackness = torch.cat((slackness_,slackness_terminal[None,...]),dim=0)
     
-    # k. combine equations
-    eq = torch.stack((FOC_c**2,FOC_m**2,FOC_h**2, FOC_n**2,slackness),dim=-1)
+#     # k. combine equations
+#     eq = torch.stack((FOC_c**2,FOC_m**2,FOC_h**2, FOC_n**2,slackness),dim=-1)
     
-    return eq
+    # return eq
     

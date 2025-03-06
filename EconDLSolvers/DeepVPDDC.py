@@ -2,7 +2,7 @@ import torch
 import torch.nn.functional as F
 
 # local
-from . import auxilliary as aux
+from rl_project.EconDLSolvers import auxilliary as aux
 
 scheduler_step = aux.scheduler_step
 

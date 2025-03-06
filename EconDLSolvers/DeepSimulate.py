@@ -5,8 +5,8 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 import torch.distributed as dist
 
 # local
-from . import auxilliary as aux
-from .simulate import simulate_DeepSimulate
+from rl_project.EconDLSolvers import auxilliary as aux
+from rl_project.EconDLSolvers.simulate import simulate_DeepSimulate
 
 scheduler_step = aux.scheduler_step
 

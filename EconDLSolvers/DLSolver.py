@@ -11,19 +11,19 @@ import time
 import torch
 
 # local
-from . import replay_buffer
-from . import DeepSimulate
-from . import DeepQ
-from . import DeepFOC
-from . import DeepV
-from . import DeepVPD
-from . import DeepVPDDC
+from rl_project.EconDLSolvers import replay_buffer
+from rl_project.EconDLSolvers import DeepSimulate
+from rl_project.EconDLSolvers import DeepQ
+from rl_project.EconDLSolvers import DeepFOC
+from rl_project.EconDLSolvers import DeepV
+from rl_project.EconDLSolvers import DeepVPD
+from rl_project.EconDLSolvers import DeepVPDDC
 
-from . import neural_nets
-from .DDP import solve_DDP, _solve_DDP_process
-from .gpu import get_free_memory
-from .simulate import simulate
-from . import figs
+from rl_project.EconDLSolvers import neural_nets
+from rl_project.EconDLSolvers.DDP import solve_DDP, _solve_DDP_process
+from rl_project.EconDLSolvers.gpu import get_free_memory
+from rl_project.EconDLSolvers.simulate import simulate
+from rl_project.EconDLSolvers import figs
 
 algos = {
     'DeepSimulate': DeepSimulate,
