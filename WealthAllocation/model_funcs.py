@@ -34,8 +34,8 @@ def utility(c, h, n, par):
         function returns the utility of a household.
         
     """
-
-	return torch.log(c) + par.j * torch.log(h) + par.vphi * ((1-n)**(1-par.nu))/(1-par.nu) #torch.log(c) + par.j * torch.log(h) - n**par.eta/par.eta 
+	#return c**(1-par.sigma_int)/(1-par.sigma_int) + par.j *h**(1-par.sigma_int)/(1-par.sigma_int) - n**(1+par.eta)/(1+par.eta)
+	return torch.log(c) + par.j * torch.log(h) - n**par.eta/par.eta 
 
 def marg_util_c(c: float) -> float:
     return 1/c
@@ -81,22 +81,29 @@ def outcomes(model, states, actions, t0 = 0, t=None):
     # b. get state observations
     w = states[...,0]  # inflation at time t
     m = states[...,1]   # real money holdings at time t
-    d = states[...,2]  # debt accumulated to time t
-    q  = states[...,3]  # real house prices at time t
-    pi  = states[...,4]  # inflation at time t
-    R_b  = states[...,5]  # nominal interest rate at time t
-    R_e  = states[...,6]  # return on equities at time t
+    q  = states[...,2]  # real house prices at time t
+    pi  = states[...,3]  # inflation at time t
+    R_b  = states[...,4]  # nominal interest rate at time t
+    R_e  = states[...,5]  # return on equities at time t
+    #d = states[...,2]  # debt accumulated to time t
+    #q  = states[...,3]  # real house prices at time t
+    #pi  = states[...,4]  # inflation at time t
+    #R_b  = states[...,5]  # nominal interest rate at time t
+    #R_e  = states[...,6]  # return on equities at time t
 
     
     # c. shares of labor, debt and portfolio allocation from actions
     n_act   = actions[...,0]  # labor hours share
-    alpha_d = actions[...,1]  # debt share
-    alpha_e = actions[...,2]  # equity share
-    alpha_b = actions[...,3]  # bond share
-    alpha_h = actions[...,4]  # house share
+    alpha_e = actions[...,1]  # equity share
+    alpha_b = actions[...,2]  # bond share
+    alpha_h = actions[...,3]  # house share
+    # alpha_d = actions[...,1]  # debt share
+    # alpha_e = actions[...,2]  # equity share
+    # alpha_b = actions[...,3]  # bond share
+    # alpha_h = actions[...,4]  # house share
 
     # d. calculate outcomes 
-    x = m + w*n_act + alpha_d*par.vartheta*w*n_act
+    x = m + w*n_act #+ alpha_d*par.vartheta*w*n_act
     
     ## housing
     h = alpha_h*(1-alpha_e)*(1-alpha_b)*x/q
@@ -120,8 +127,8 @@ def reward(model,states,actions,outcomes,t0=0,t=None):
     # b. utility
     u = utility(c, h, n, par)
     #print(f"print avg utility: {u}")
-    #print(f"utility on avg: {round(torch.mean(u).item(), 5)}")
-    
+    print(f"utility on avg: {round(torch.mean(u).item(), 5)}")
+    #print(f"house holding on avg: {round(torch.mean(h).item(), 5)}")
     # c. finalize
     return u 
 
@@ -164,36 +171,38 @@ def state_trans_pd(model,states,actions,outcomes,t0=0,t=None):
     # c. get state observations
     w = states[...,0]  # inflation at time t
     m = states[...,1]   # real money holdings at time t
-    d = states[...,2]  # debt accumulated to time t
-    q  = states[...,3]  # real house prices at time t
-    pi  = states[...,4]  # inflation at time t
-    R_b  = states[...,5]  # nominal interest rate at time t
-    R_e  = states[...,6]  # return on equities at time t
+    q  = states[...,2]  # real house prices at time t
+    pi  = states[...,3]  # inflation at time t
+    R_b  = states[...,4]  # nominal interest rate at time t
+    R_e  = states[...,5]  # return on equities at time t
+    #d = states[...,2]  # debt accumulated to time t
+    #q  = states[...,3]  # real house prices at time t
+    #pi  = states[...,4]  # inflation at time t
+    #R_b  = states[...,5]  # nominal interest rate at time t
+    #R_e  = states[...,6]  # return on equities at time t
     
     # d. get actions
     n_act   = actions[...,0]  # labor hours share
-    alpha_d = actions[...,1]  # debt share
-    alpha_e = actions[...,2]  # equity share
-    alpha_b = actions[...,3]  # bond share
-    alpha_h = actions[...,4]  # house share
+    alpha_e = actions[...,1]  # equity share
+    alpha_b = actions[...,2]  # bond share
+    alpha_h = actions[...,3]  # house share
+    #alpha_d = actions[...,1]  # debt share
+    # alpha_e = actions[...,2]  # equity share
+    # alpha_b = actions[...,3]  # bond share
+    # alpha_h = actions[...,4]  # house share
     
-    #print(f"labor hours on avg: {round(torch.mean(n_act).item(), 5)}")
-    
-    #print(f"debt share: {alpha_d}")
-    #print(f"equity share: {alpha_e}")
-    #print(f"bond share: {alpha_b}")
-    #print(f"house share avg: {torch.mean(alpha_h)}")
     # e. post-decision 
-    x = m + w*n_act + alpha_d*par.vartheta*w*n_act
-    d_n = alpha_d*par.vartheta*w*n_act
+    x = m + w*n_act #+ alpha_d*par.vartheta*w*n_act
+    #d_n = alpha_d*par.vartheta*w*n_act
     b = alpha_b * x
     e = alpha_e*(1-alpha_b) * x
     #if torch.mean(x).item() > 0:
     #print(f"labor supply on avg: {round(torch.mean(n_act).item(), 5)}")
-    print(f"w on avg: {round(torch.mean(w).item(), 5)}")
+    #print(f"w on avg: {round(torch.mean(w).item(), 5)}")
     #print(f"funds avaliable on avg: {round(torch.mean(x).item(), 5)}")
     #print(f"money holdings on avg: {round(torch.mean(m).item(), 5)}")
-    return torch.stack((b, e, h, w, q, d, d_n, pi),dim=-1)
+    return torch.stack((b, e, h, w, q, pi),dim=-1)
+    #return torch.stack((b, e, h, w, q, d, d_n, pi),dim=-1)
 
 
 
@@ -208,9 +217,10 @@ def state_trans(model,state_trans_pd,shocks,t=None):
     h_pd = state_trans_pd[...,2]
     w_pd = state_trans_pd[...,3]
     q_pd = state_trans_pd[...,4]
-    d_pd = state_trans_pd[...,5]
-    d_n_pd = state_trans_pd[...,6]
-    pi_pd = state_trans_pd[...,7]
+    pi_pd = state_trans_pd[...,5]
+    #d_pd = state_trans_pd[...,5]
+    #d_n_pd = state_trans_pd[...,6]
+    #pi_pd = state_trans_pd[...,7]
     
     # c. unpack shocks
     psi_plus = shocks[:,0]
@@ -226,8 +236,8 @@ def state_trans(model,state_trans_pd,shocks,t=None):
         h_pd  = expand_to_quad(h_pd, train.Nquad)
         w_pd  = expand_to_quad(w_pd, train.Nquad)
         q_pd  = expand_to_quad(q_pd, train.Nquad)
-        d_pd  = expand_to_quad(d_pd, train.Nquad)
-        d_n_pd  = expand_to_quad(d_n_pd, train.Nquad)
+        #d_pd  = expand_to_quad(d_pd, train.Nquad)
+        #d_n_pd  = expand_to_quad(d_n_pd, train.Nquad)
         pi_pd  = expand_to_quad(pi_pd, train.Nquad)
 
         
@@ -238,28 +248,33 @@ def state_trans(model,state_trans_pd,shocks,t=None):
         epsn_h_plus  = expand_to_states(epsn_h_plus,state_trans_pd)
 	
     # c. calculate inflation, interest rate, return on investment
-    #pi_plus = torch.exp((1-par.rhopi)*par.pi_star + par.rhopi*torch.log(pi_pd) + epsn_pi_plus) #next period inflation
-    pi_plus = epsn_pi_plus
-    print(f"Inflation on avg: {round(torch.mean(pi_plus).item(), 5)}")
+    pi_plus = torch.exp((1-par.rhopi)*par.pi_star + par.rhopi*torch.log(pi_pd) + epsn_pi_plus) #next period inflation
+    #pi_plus = epsn_pi_plus
+    #print(f"Inflation on avg: {round(torch.mean(pi_plus).item(), 5)}")
     R_plus = epsn_R_plus * (par.R_star -1)*(pi_plus/math.exp(par.pi_star))**((par.A*par.R_star)/(par.R_star -1)) + 1 #next period nominal interest rate adjusted by centralbank
     
     #print(f"Nominal interest on avg: {round(torch.mean(R_plus).item(), 5)}")
-    R_e_plus = 1+pi_plus - R_plus + epsn_e_plus #next period equity returns
+    R_e_plus = pi_plus - R_plus + epsn_e_plus #next period equity returns
+    #print(f"Stock retun on avg: {round(torch.mean(R_e_plus).item(), 5)}")
     
     q_plus = (par.q0 + par.q_h*(R_e_plus - R_plus) + q_pd + epsn_h_plus) #next period real house prices
     
+    #print(f"House price on avg: {round(torch.mean(q_plus).item(), 5)}")
     w_plus = (par.gamma * psi_plus * w_pd)/(1+pi_plus) #next period wage
 	
     R_q_plus = (q_plus - q_pd)/q_pd
+    #print(f"House return on avg: {round(torch.mean(R_q_plus).item(), 5)}")
     
-    R_d_plus = R_plus + par.eps_rp
+    #R_d_plus = R_plus + par.eps_rp
     
     # d. calculate money holdings next period and rolling debt
-    m_plus = R_plus*b_pd/(1+pi_plus) + R_e_plus*e_pd/(1+pi_plus) + R_q_plus*h_pd/(1+pi_plus) - (par.lbda + R_d_plus-1)*d_pd/(1+pi_plus)
-    d_plus = d_n_pd/(1+pi_plus) + (1-par.lbda)*d_pd/(1+pi_plus)    
+    m_plus = R_plus*b_pd/(1+pi_plus) + R_e_plus*e_pd/(1+pi_plus) + R_q_plus*h_pd/(1+pi_plus)
+    #m_plus = R_plus*b_pd/(1+pi_plus) + R_e_plus*e_pd/(1+pi_plus) + R_q_plus*h_pd/(1+pi_plus) - (par.lbda + R_d_plus-1)*d_pd/(1+pi_plus)
+    #d_plus = d_n_pd/(1+pi_plus) + (1-par.lbda)*d_pd/(1+pi_plus)    
     
     # d. finalize
-    states_plus = torch.stack((w_plus,m_plus,d_plus,q_plus,pi_plus,R_plus,R_e_plus),dim=-1)
+    states_plus = torch.stack((w_plus,m_plus,q_plus,pi_plus,R_plus,R_e_plus),dim=-1)
+    #states_plus = torch.stack((w_plus,m_plus,d_plus,q_plus,pi_plus,R_plus,R_e_plus),dim=-1)
     return states_plus
 
 #%% Equations for DeepFOC

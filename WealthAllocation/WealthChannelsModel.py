@@ -39,14 +39,14 @@ class WealthBehaviorModelClass(DLSolverClass):
         
         ## parameters of the model
         par.beta = 0.99     #discount factor
-        par.j = 0.005         #relative preference weight of house holdings
+        par.j = 0.1         #relative preference weight of house holdings
         par.A = 1.3         #taylor rule coefficient
-        par.pi_star = math.log(1.80) #target gross high-inflation rate (
+        par.pi_star = math.log(1.01) #target gross high-inflation rate (
         par.R_star = par.beta / math.exp(par.pi_star) #target nominal interest rate
-        par.rhopi = 0.3     #persistence of inflation 
+        par.rhopi = 0.00005     #persistence of inflation 
         par.gamma = 1.03    #gross wage growth
         par.vartheta = 0.7  #fraction of wealth to determine limit of debt
-        par.eta = 0.4       #labor supply schedule
+        par.eta = 1#1.1       #labor supply schedule
         par.lbda = 0.2      #minimum payment due
         par.varphi = 1.01   #labor supply schedule
         par.q0 = 1      #initial value house price
@@ -54,36 +54,37 @@ class WealthBehaviorModelClass(DLSolverClass):
         par.eps_rp = 0.02   #risk premium
         
         ##testing
-        par.nu = 2.0
-        par.vphi = 0.8
+        #par.nu = 2.0
+        #par.vphi = 0.8
+        #par.sigma_int =  3.0000 #inverse of intertemporal elasticity of consumption and money holdings
 
         ## mean and std of shocks
         par.psi_sigma = 0.0005 #wage shock (std std.) log_normal distributed
         par.psi_mu = 1         #wage shock mean one 
         par.Npsi = 4
         
-        par.Q_loc = 1    #equity returns shock (mean) student-t distributed
-        par.Q_nu = 4     #equity returns degrees of freedom
-        par.Q_scale = 0.01  #equity returns shock (std. dev) student-t distributed
-        par.NQ = 4       #equity returns shock quadrature nodes
+        par.Q_loc = 0.07    #equity returns shock (mean) student-t distributed
+        par.Q_nu = 4        #equity returns degrees of freedom
+        par.Q_scale = 0.03  #equity returns shock (std. dev) student-t distributed
+        par.NQ = 4          #equity returns shock quadrature nodes
         
-        par.R_sigma = 0.01 #monetary policy shock (std. dev) normal mean = 0
-        par.R_mu = 0.01       #monetary policy shock mean
-        par.NR = 4           #monetary policy quadrature nodes
+        par.R_sigma = 0.0005  #monetary policy shock (std. dev) normal mean = 0
+        par.R_mu = 1          #monetary policy shock mean
+        par.NR = 4            #monetary policy quadrature nodes
         
-        par.pi_sigma = 0.03 #inflation shock (std. dev) log_normal distributed
+        par.pi_sigma = 0.0010  #inflation shock (std. dev) log_normal distributed
         par.pi_mu = 0.02       #inflation shock mean
-        par.Npi  = 4          #inflation shock quardrature nodes
+        par.Npi  = 4           #inflation shock quardrature nodes
         
-        par.h_sigma = 0.01 #house price shock (std. dev) log normal dis
-        par.h_mu = 0.1         #house price mean 
+        par.h_sigma = 0.0005    #house price shock (std. dev) log normal dis
+        par.h_mu = 0.00         #house price shock mean 
         par.Nh = 4
         
         
         ## Interval values of initial states and actions REVISIT
         
         par.pi_min = 0.000 # minimum inflation of 0% 
-        par.pi_max = 0.001 # maximum inflation of 8%
+        par.pi_max = 0.000001 # maximum inflation of 8%
         
         par.w_min = 0.000    # minimum wage
         par.w_max = 0.999 # maximum wage, no bounds?
@@ -92,10 +93,13 @@ class WealthBehaviorModelClass(DLSolverClass):
         # b. solver settings
         
         # states, actions and shocks
-        par.Nstates = 7
-        par.Nstates_pd = 8
+        #par.Nstates = 7
+        par.Nstates = 6
+        #par.Nstates_pd = 8
+        par.Nstates_pd = 6
         par.Nshocks = 5
-        par.Nactions = 5
+        #par.Nactions = 5
+        par.Nactions = 4
         
         # outcomes and actions
         par.Noutcomes = 3 # consumption, house holdings, labor
@@ -123,7 +127,8 @@ class WealthBehaviorModelClass(DLSolverClass):
         if par.KKT:
             par.Nactions = 7 #revisit when focs are done
         else:
-            par.Nactions = 5
+            #par.Nactions = 5
+            par.Nactions = 4
         
         # c. quadrature
         par.psi, par.psi_w  = misc.log_normal_gauss_hermite(sigma = par.psi_sigma, n = par.Npsi, mu = par.psi_mu)
@@ -179,10 +184,12 @@ class WealthBehaviorModelClass(DLSolverClass):
             
         else: 
             ## n, alpha_d, alpha_e, alpha_b, alpha_h
-            train.policy_activation_final = ['sigmoid', 'sigmoid', 'sigmoid','sigmoid','sigmoid']
-            train.min_actions = torch.tensor([0.0000, 0.0000, 0.0000, 0.0000, 0.0000],dtype=dtype,device=device) #minimum action value n, alpha_d, alpha_e, alpha_b, alpha_h
-            train.max_actions = torch.tensor([0.9999, 0.9999, 0.9999, 0.9999, 0.9999],dtype=dtype,device=device) #maximum action value n, alpha_d, alpha_e, alpha_b, alpha_h
-            
+            #train.policy_activation_final = ['sigmoid', 'sigmoid', 'sigmoid','sigmoid','sigmoid']
+            train.policy_activation_final = ['sigmoid', 'sigmoid', 'sigmoid','sigmoid']
+            #train.min_actions = torch.tensor([0.0000, 0.0000, 0.0000, 0.0000, 0.0000],dtype=dtype,device=device) #minimum action value n, alpha_d, alpha_e, alpha_b, alpha_h
+            #train.max_actions = torch.tensor([1.0-1e-6, 1.0-1e-6, 1.0-1e-6, 1.0-1e-6, 1.0-1e-6],dtype=dtype,device=device) #maximum action value n, alpha_d, alpha_e, alpha_b, alpha_h
+            train.min_actions = torch.tensor([0.0000, 0.0000, 0.0000, 0.0000],dtype=dtype,device=device) #minimum action value n, alpha_d, alpha_e, alpha_b, alpha_h
+            train.max_actions = torch.tensor([1.0-1e-6, 1.0-1e-6, 1.0-1e-6, 1.0-1e-6],dtype=dtype,device=device) #maximum action value n, alpha_d, alpha_e, alpha_b, alpha_h
         
         # c. misc
         train.terminal_actions_known = False # use terminal actions
@@ -254,31 +261,35 @@ class WealthBehaviorModelClass(DLSolverClass):
         par = self.par
         
         # a. draw initial inflation pi
-        #pi0 = torch_uniform(par.pi_min, par.pi_max, size = (N,))
-        pi0 = torch.zeros((N,)) * 0.02
+        pi0 = torch_uniform(par.pi_min, par.pi_max, size = (N,))
+        #pi0 = torch.zeros((N,)) * 0.02
         
         # b. draw initial nominal interest rate
         R0 = torch.exp(torch.normal(mean=par.R_mu, std=par.R_sigma, size=(N,))) 
-        R0 = R0*(par.R_star -1)*(pi0/par.pi_star)**((par.A*par.R_star)/(par.R_star -1)) + 1
+        R0 = R0*(par.R_star -1)*(pi0-1)/(par.pi_star)**((par.A*par.R_star)/(par.R_star -1)) + 1
         
         # c. draw initial equity return
         R_e0 = torch.zeros((N,))
         
         # d. draw initial wage
-        w0 = torch.ones((N,))
+        w0 = torch.ones((N,))/(1+pi0)
         
         # e. draw initial money holdings
-        m0 = torch.ones((N,))
+        m0 = torch.ones((N,))/(1+pi0)
         
         # f. draw initial debt
         d0 = torch.zeros((N,))
         
         # g. draw initial house prices
         epsn_h0 = torch.exp(torch.normal(par.h_mu, par.h_sigma, size=(N,)))
-        q0 = (par.q0 + par.q_h*(R_e0 - R0) + epsn_h0)/(1+pi0)
+        q0 = (par.q_h*(R_e0 - R0) + epsn_h0)/(1+pi0)
         
         
-        return torch.stack((w0,m0,d0,q0,pi0,R0,R_e0),dim=-1)
+        
+        #print(f"initial interest rate: {R0}, initial inflation {pi0}, initial house price {q0}")
+        #print(f"initial real house price on avg: {round(torch.mean(q0).item(), 5)}")
+        return torch.stack((w0,m0,q0,pi0,R0,R_e0),dim=-1)
+        #return torch.stack((w0,m0,d0,q0,pi0,R0,R_e0),dim=-1)
     
     def draw_exploration_shocks(self,epsilon_sigma,N): 
         """ draw exploration shockss """ 
