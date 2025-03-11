@@ -40,11 +40,12 @@ model_DL['DeepSimulate'].solve(do_print=True)
 figs, axes = plt.subplots(2, 3, figsize=(16, 9))
 
 for model_key, label in model_DL.items():
+    total_asset = np.mean(model_DL[model_key].sim.actions[:, :, 2].cpu().numpy()) + np.mean(model_DL[model_key].sim.actions[:, :, 3].cpu().numpy()) +np.mean(model_DL[model_key].sim.actions[:, :, 4].cpu().numpy())
     axes[0,0].plot(np.mean(model_DL[model_key].sim.actions[:, :, 0].cpu().numpy(), axis=1),label=model_key, lw = 2) # labor share
     axes[0,1].plot(np.mean(model_DL[model_key].sim.actions[:, :, 1].cpu().numpy(), axis=1), lw = 2) # debt share
-    axes[1,0].plot(np.mean(model_DL[model_key].sim.actions[:, :, 2].cpu().numpy(), axis=1), lw = 2) # equity share
-    axes[1,1].plot(np.mean(model_DL[model_key].sim.actions[:, :, 3].cpu().numpy(), axis=1), lw = 2) # bond share
-    axes[1,2].plot(np.mean(model_DL[model_key].sim.actions[:, :, 4].cpu().numpy(), axis=1), lw = 2) # house share
+    axes[1,0].plot(np.mean(model_DL[model_key].sim.actions[:, :, 2].cpu().numpy() / total_asset, axis=1), lw = 2) # equity share
+    axes[1,1].plot(np.mean(model_DL[model_key].sim.actions[:, :, 3].cpu().numpy()/ total_asset, axis=1), lw = 2) # bond share
+    axes[1,2].plot(np.mean(model_DL[model_key].sim.actions[:, :, 4].cpu().numpy()/ total_asset, axis=1), lw = 2) # house share
 
 figs.suptitle("Actions")
 axes[0,0].legend()

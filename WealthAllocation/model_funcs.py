@@ -82,10 +82,6 @@ def outcomes(model, states, actions, t0 = 0, t=None):
     # b. get state observations
     w = states[...,0]  # inflation at time t
     m = states[...,1]   # real money holdings at time t
-    # q  = states[...,2]  # real house prices at time t
-    # pi  = states[...,3]  # inflation at time t
-    # R_b  = states[...,4]  # nominal interest rate at time t
-    # R_e  = states[...,5]  # return on equities at time t
     d = states[...,2]  # debt accumulated to time t
     q  = states[...,3]  # real house prices at time t
     pi  = states[...,4]  # inflation at time t
@@ -95,39 +91,44 @@ def outcomes(model, states, actions, t0 = 0, t=None):
     
     # c. shares of labor, debt and portfolio allocation from actions
     n_act   = actions[...,0]  # labor hours share
-    # alpha_e = actions[...,1]  # equity share
-    # alpha_b = actions[...,2]  # bond share
-    # alpha_h = actions[...,3]  # house share
     alpha_d = actions[...,1]  # debt share
     alpha_e = actions[...,2]  # equity share
     alpha_b = actions[...,3]  # bond share
     alpha_h = actions[...,4]  # house share
     
-    # if t is None: #when solving for DeepVPD or DeepFOC
-    #     if len(states.shape) == 7:
-    #         T,N = states.shape[:-1]
-    #         y = par.y.reshape(par.T,1).repeat(1,N)
-            
-    #     else:
-    #         T = states.shape[0]
-    #         N = states.shape[1]
-    #         y = par.y.reshape(par.T,1,1).repeat(1,N,train.Nquad)
-    #     T = w.shape[0]
+    ## normalize portfolio allocation to 1
+    total_alpha = alpha_e + alpha_b + alpha_h + 1e-8
+    alpha_e_norm = alpha_e/total_alpha
+    alpha_b_norm = alpha_b/total_alpha
+    alpha_h_norm = alpha_h/total_alpha
+    
+    # d. calculate outcomes 
+    # compute funds before and after retirement
+    if t is None: #when solving for DeepVPD or DeepFOC
+        T,N = states.shape[-1]
+        kappa = par.kappa.reshape(par.T,1,1).repeat(1,N,train.Nquad)/(1+pi)
         
-    #     #print(f"y on avg {round(torch.mean(y).item())}")
-    #     income_fac = y[t0:T+t0]
-    # else:
-    #     income_fac = par.y[t]
+        if par.T_retired == par.T: #condition if retirement year is equal to full time period
+            x = m + kappa[:par.T-1]*w*n_act + alpha_d*par.vartheta*w*n_act
+        else:
+            x_before = m + kappa[:par.T_retired]*w*n_act + alpha_d*par.vartheta*w*n_act
+            x_after = m + kappa[par.T_retired] * torch.ones_like(w[par.T_retired:])
+            x = torch.cat((x_before, x_after), dim=0)
+    else: #when simulating
+         real_kappa = par.kappa[t] / (1+pi)
+         if t < par.T_retired:
+             real_kappa = real_kappa / (1+pi)
+             x = m + real_kappa*w*n_act + alpha_d*par.vartheta*w*n_act
+         else: 
+             x = m + real_kappa
    # print(f"income at time t {income}")
     #print(f"income on avg {round(torch.mean(income).item())}")
-    # d. calculate outcomes 
-    x = m + w*n_act + alpha_d*par.vartheta*w*n_act
     
     ## housing
-    h = alpha_h*(1-alpha_e)*(1-alpha_b)*x #/q
+    h = alpha_h_norm*(1-alpha_e_norm)*(1-alpha_b_norm)*x #/q
     
     ## consumption
-    c = (1-alpha_h)*(1-alpha_e)*(1-alpha_b)*x
+    c = (1-alpha_h_norm)*(1-alpha_e_norm)*(1-alpha_b_norm)*x
     
     #print(f"funds on avg {round(torch.mean(x).item())}")
     #print(f"housing price on avg. {round(torch.mean(q).item())}")
@@ -196,10 +197,6 @@ def state_trans_pd(model,states,actions,outcomes,t0=0,t=None):
     # c. get state observations
     w = states[...,0]  # inflation at time t
     m = states[...,1]   # real money holdings at time t
-    # q  = states[...,2]  # real house prices at time t
-    # pi  = states[...,3]  # inflation at time t
-    # R_b  = states[...,4]  # nominal interest rate at time t
-    # R_e  = states[...,5]  # return on equities at time t
     d = states[...,2]  # debt accumulated to time t
     q  = states[...,3]  # real house prices at time t
     pi  = states[...,4]  # inflation at time t
@@ -208,20 +205,25 @@ def state_trans_pd(model,states,actions,outcomes,t0=0,t=None):
     
     # d. get actions
     n_act   = actions[...,0]  # labor hours share
-    # alpha_e = actions[...,1]  # equity share
-    # alpha_b = actions[...,2]  # bond share
-    # alpha_h = actions[...,3]  # house share
     alpha_d = actions[...,1]  # debt share
     alpha_e = actions[...,2]  # equity share
     alpha_b = actions[...,3]  # bond share
     alpha_h = actions[...,4]  # house share
-        
+    
+    ## normalize portfolio allocation to 1
+    total_alpha = alpha_e + alpha_b + alpha_h + 1e-8
+    alpha_e_norm = alpha_e/total_alpha
+    alpha_b_norm = alpha_b/total_alpha
+    alpha_h_norm = alpha_h/total_alpha
+    
     # e. post-decision 
-    d_n = alpha_d*par.vartheta*w*n_act
-    b = alpha_b * x
-    e = alpha_e*(1-alpha_b) * x
-    
-    
+    if t < par.T_retired:
+        d_n = alpha_d*par.vartheta*w*n_act
+    else: 
+        d_n = torch.zeros((w.shape))
+        
+    b = alpha_b_norm * x
+    e = alpha_e_norm*(1-alpha_b_norm) * x
     
     #print(f"bonds on avg: {round(torch.mean(b).item(), 5)}")
     #if torch.mean(x).item() > 0:
@@ -230,7 +232,7 @@ def state_trans_pd(model,states,actions,outcomes,t0=0,t=None):
     #print(f"funds avaliable on avg: {round(torch.mean(x).item(), 5)}")
     #print(f"money holdings on avg: {round(torch.mean(m).item(), 5)}")
     #return torch.stack((b, e, h, w, q, pi),dim=-1)
-    return torch.stack((b, e, h, w, q, d, d_n, pi),dim=-1)
+    return torch.stack((b, e, h, w, q, d, d_n, pi, R_b),dim=-1)
 
 
 
@@ -245,10 +247,10 @@ def state_trans(model,state_trans_pd,shocks,t=None):
     h_pd = state_trans_pd[...,2]
     w_pd = state_trans_pd[...,3]
     q_pd = state_trans_pd[...,4]
-    #pi_pd = state_trans_pd[...,5]
     d_pd = state_trans_pd[...,5]
     d_n_pd = state_trans_pd[...,6]
     pi_pd = state_trans_pd[...,7]
+    R_b_pd = state_trans_pd[...,8]
     
     # c. unpack shocks
     psi_plus = shocks[:,0]
@@ -267,6 +269,7 @@ def state_trans(model,state_trans_pd,shocks,t=None):
         d_pd  = expand_to_quad(d_pd, train.Nquad)
         d_n_pd  = expand_to_quad(d_n_pd, train.Nquad)
         pi_pd  = expand_to_quad(pi_pd, train.Nquad)
+        R_b_pd  = expand_to_quad(R_b_pd, train.Nquad)
 
         
         psi_plus     = expand_to_states(psi_plus,state_trans_pd)
@@ -277,9 +280,9 @@ def state_trans(model,state_trans_pd,shocks,t=None):
 	
     # c. calculate inflation, interest rate, return on investment
 
-    pi_plus = (1-par.rhopi)*par.pi_star + par.rhopi*pi_pd + epsn_pi_plus
+    pi_plus = (1-par.rhopi)*par.pi_star + par.rhopi*pi_pd - 0.02*R_b_pd + epsn_pi_plus 
 
-    R_plus = epsn_R_plus * ((1+par.R_star)*((pi_plus)/par.pi_star)**((par.A*(par.R_star+1))/(par.R_star)) +1) #next period nominal interest rate adjusted by centralbank
+    R_plus = epsn_R_plus * ((1+par.R_star)*((pi_plus)/par.pi_star)**((par.A*(par.R_star+1))/(par.R_star-1)) +1) #next period nominal interest rate adjusted by centralbank
 
     R_e_plus = pi_plus - R_plus + epsn_e_plus #next period equity returns
   
@@ -306,7 +309,7 @@ def state_trans(model,state_trans_pd,shocks,t=None):
     d_plus = d_n_pd/(1+pi_plus) + (1-par.lbda)*d_pd/(1+pi_plus)    
     
     #print(f"Money t+1 on avg: {round(torch.mean(m_plus).item(), 5)}")
-    # d. finalize
+    # e. finalize
     #states_plus = torch.stack((w_plus,m_plus,q_plus,pi_plus,R_plus,R_e_plus),dim=-1)
     states_plus = torch.stack((w_plus,m_plus,d_plus,q_plus,pi_plus,R_plus,R_e_plus),dim=-1)
     return states_plus
