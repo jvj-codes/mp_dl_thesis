@@ -36,21 +36,21 @@ class WealthBehaviorModelClass(DLSolverClass):
         
         # a. model
         par.T = 80 #lifetime (working + retirement)
-        par.T_retired = 70 #retirement years
+        par.T_retired = 67 #retirement at year
         
         ## parameters of the model
         par.beta = 0.99     #discount factor
-        par.j = 0.001         #relative preference weight of house holdings
+        par.j = 0.01         #relative preference weight of house holdings
         par.A = 1.3         #taylor rule coefficient
         par.pi_star = 0.02  #target inflation rate
-        par.gamma = 1.05 #1.03 gives decreasing labor     #wage growth
+        par.gamma = 1.06 #1.03 gives decreasing labor     #wage growth
         par.R_star = (1+par.pi_star)/par.beta -1  #target nominal interest rate
         par.rhopi = 0.3     #persistence of inflation 
         par.vartheta = 0.7  #fraction of wealth to determine limit of debt
-        par.eta = 1.5#1.1       #labor supply schedule
+        par.eta = 1.5 #1.1       #labor supply schedule
         par.lbda = 0.2      #minimum payment due
         par.varphi = 1.01   #labor supply schedule
-        par.q0 = 1      #initial value house price
+        par.q0 = 0      #initial value house price
         par.q_h = 0.2       #spread importance
         par.eps_rp = 0.04   #risk premium
         
@@ -58,7 +58,7 @@ class WealthBehaviorModelClass(DLSolverClass):
         par.kappa_base = 1.0 # base
         par.kappa_growth = 0.04 # income growth
         par.kappa_growth_decay = 0.1 # income growth decay
-        par.kappa_retired = 0.2 # replacement rate
+        par.kappa_retired = 0.7 # replacement rate
         
         ##testing
         #par.nu = 2.0
@@ -70,16 +70,16 @@ class WealthBehaviorModelClass(DLSolverClass):
         par.psi_mu = 0         #wage shock mean zero 
         par.Npsi = 4
         
-        par.Q_loc = 7    #equity returns shock (mean) student-t distributed
-        par.Q_nu = 4        #equity returns degrees of freedom
-        par.Q_scale = 15  #equity returns shock (std. dev) student-t distributed
+        par.Q_loc = 10    #equity returns shock (mean) student-t distributed
+        par.Q_nu = 7        #equity returns degrees of freedom
+        par.Q_scale = 20  #equity returns shock (std. dev) student-t distributed
         par.NQ = 4          #equity returns shock quadrature nodes
         
         par.R_sigma = 0.0005  #monetary policy shock (std. dev) log normal mean = 0
         par.R_mu = 1          #monetary policy shock mean
         par.NR = 4            #monetary policy quadrature nodes
         
-        par.pi_sigma = 0.00005  #inflation shock (std. dev) distributed
+        par.pi_sigma = 0.0005  #inflation shock (std. dev) distributed
         par.pi_mu = 0           #inflation shock mean
         par.Npi  = 4           #inflation shock quardrature nodes
         
@@ -93,8 +93,8 @@ class WealthBehaviorModelClass(DLSolverClass):
         par.pi_min = 0.02 # minimum inflation of 2% 
         par.pi_max = 0.04 # maximum inflation of 4%
         
-        par.w_min = 0.000    # minimum wage
-        par.w_max = 0.999 # maximum wage, no bounds?
+        par.R_min = 0.03    # minimum wage
+        par.R_max = 0.05 # maximum wage, no bounds?
         
 
         # b. solver settings
@@ -279,11 +279,11 @@ class WealthBehaviorModelClass(DLSolverClass):
         pi0 = torch_uniform(par.pi_min, par.pi_max, size = (N,))
         
         # b. draw initial nominal interest rate
-        R0 = torch.exp(torch.normal(mean=par.R_mu, std=par.R_sigma, size=(N,))) 
+        #R0 = torch.exp(torch.normal(mean=par.R_mu, std=par.R_sigma, size=(N,))) / 100
         #R0 = R0*(par.R_star -1)*(pi0-1)/(par.pi_star)**((par.A*par.R_star)/(par.R_star -1)) + 1
-        R0 = R0*(par.R_star -1)*((1+pi0)/(1+par.pi_star))**((par.A*par.R_star)/(par.R_star -1)) + 1
-        #R0 = R0/100
+        #R0 = R0*(par.R_star -1)*((1+pi0)/(1+par.pi_star))**((par.A*par.R_star)/(par.R_star -1)) + 1
         
+        R0 = torch_uniform(par.R_min, par.R_max, size = (N,))
         # c. draw initial equity return
         dist_e = torch.distributions.StudentT(df=par.Q_nu, loc=par.Q_loc, scale=par.Q_scale)
         epsn_e = dist_e.sample((N,)) / 100
