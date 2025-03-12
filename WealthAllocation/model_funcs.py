@@ -152,7 +152,7 @@ def reward(model,states,actions,outcomes,t0=0,t=None):
     # b. utility
     u = utility(c, h, n, par)
     #print(f"print avg utility: {u}")
-    #print(f"utility on avg: {round(torch.mean(u).item(), 5)}")
+    print(f"utility on avg: {round(torch.mean(u).item(), 5)}")
     #print(f"house holding on avg: {round(torch.mean(h).item(), 5)}")
     # c. finalize
     return u 
@@ -280,7 +280,7 @@ def state_trans(model,state_trans_pd,shocks,t=None):
 	
     # c. calculate inflation, interest rate, return on investment
 
-    pi_plus = (1-par.rhopi)*par.pi_star + par.rhopi*pi_pd - 0.02*R_b_pd + epsn_pi_plus 
+    pi_plus = (1-par.rhopi)*par.pi_star + par.rhopi*pi_pd - par.Rpi*R_b_pd + epsn_pi_plus 
 
     R_plus = epsn_R_plus * ((1+par.R_star)*((pi_plus)/par.pi_star)**((par.A*(par.R_star+1))/(par.R_star-1)) +1) #next period nominal interest rate adjusted by centralbank
 
