@@ -152,7 +152,7 @@ def reward(model,states,actions,outcomes,t0=0,t=None):
     # b. utility
     u = utility(c, h, n, par)
     #print(f"print avg utility: {u}")
-    print(f"utility on avg: {round(torch.mean(u).item(), 5)}")
+    #print(f"utility on avg: {round(torch.mean(u).item(), 5)}")
     #print(f"house holding on avg: {round(torch.mean(h).item(), 5)}")
     # c. finalize
     return u 
@@ -286,7 +286,7 @@ def state_trans(model,state_trans_pd,shocks,t=None):
 
     R_e_plus = pi_plus - R_plus + epsn_e_plus #next period equity returns
   
-    q_plus = (par.q0 + par.q_h*(R_e_plus - R_plus) + q_pd + epsn_h_plus) #next period real house prices
+    q_plus = (par.q_h*(R_e_plus - R_plus) + q_pd + epsn_h_plus) #next period real house prices
     
     w_plus = (par.gamma * psi_plus * w_pd)/(1+pi_plus) #next period wage
 	

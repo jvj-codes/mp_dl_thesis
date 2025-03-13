@@ -42,22 +42,20 @@ class WealthBehaviorModelClass(DLSolverClass):
         par.beta = 0.99     #discount factor
         par.j = 0.01         #relative preference weight of house holdings
         par.A = 1.3         #taylor rule coefficient
-        par.pi_star = 0.02  #target inflation rate
+        par.pi_star = 0.04  #target inflation rate
         par.gamma = 1.06 #1.03 gives decreasing labor     #wage growth
         par.R_star = (1+par.pi_star)/par.beta -1  #target nominal interest rate
         par.rhopi = 0.3     #persistence of inflation 
         par.vartheta = 0.7  #fraction of wealth to determine limit of debt
-        par.eta = 1.1 #1.1       #labor supply schedule
+        par.eta = 1.00  #1.1       #labor supply schedule
         par.lbda = 0.2      #minimum payment due
-        par.varphi = 1.01   #labor supply schedule
-        par.q0 = 0      #initial value house price
-        par.q_h = 0.2       #spread importance
+        par.q_h = 0.1       #spread importance
         par.eps_rp = 0.04   #risk premium
         par.Rpi = 0.05            #impact of interest rate on inflation lagged
         
         ### income
         par.kappa_base = 1.0 # base
-        par.kappa_growth = 0.04 # income growth
+        par.kappa_growth = 0.000 # income growth #kappa before 0.03
         par.kappa_growth_decay = 0.1 # income growth decay
         par.kappa_retired = 0.7 # replacement rate
         
@@ -73,7 +71,7 @@ class WealthBehaviorModelClass(DLSolverClass):
         
         par.Q_loc = 8    #equity returns shock (mean) student-t distributed
         par.Q_nu = 4        #equity returns degrees of freedom
-        par.Q_scale = 20  #equity returns shock (std. dev) student-t distributed
+        par.Q_scale = 25  #equity returns shock (std. dev) student-t distributed
         par.NQ = 4          #equity returns shock quadrature nodes
         
         par.R_sigma = 0.0005  #monetary policy shock (std. dev) log normal mean = 0
@@ -228,8 +226,8 @@ class WealthBehaviorModelClass(DLSolverClass):
                 train.epsilon_sigma = np.array([0.1,0.1,0.1,0.1,0.1,0.1,0.0]) #revisit this
                 train.epsilon_sigma_min = np.array([0.0,0.0,0.0,0.0,0.0,0.0,0.0])
             else:
-                train.epsilon_sigma = np.array([0.1,0.1,0.1,0.1]) #revisit this
-                train.epsilon_sigma_min = np.array([0.0,0.0,0.0,0.0])
+                train.epsilon_sigma = np.array([0.1,0.1,0.1,0.1,0.1]) #revisit this
+                train.epsilon_sigma_min = np.array([0.0,0.0,0.0,0.0,0.0])
 
             
     def allocate_train(self):
