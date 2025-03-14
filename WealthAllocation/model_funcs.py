@@ -125,7 +125,7 @@ def outcomes(model, states, actions, t0 = 0, t=None):
     #print(f"income on avg {round(torch.mean(income).item())}")
     
     ## housing
-    h = alpha_h_norm*(1-alpha_e_norm)*(1-alpha_b_norm)*x #/q
+    h_n = alpha_h_norm*(1-alpha_e_norm)*(1-alpha_b_norm)*x #/q
     
     ## consumption
     c = (1-alpha_h_norm)*(1-alpha_e_norm)*(1-alpha_b_norm)*x
@@ -136,7 +136,7 @@ def outcomes(model, states, actions, t0 = 0, t=None):
     #print(f"consumption on avg. {round(torch.mean(c).item())}")
     #print(f"housing on avg. {round(torch.mean(h).item())}")
         
-    return torch.stack((c, h, n_act, x),dim=-1)
+    return torch.stack((c, h_n, n_act, x),dim=-1)
         
 #%% Reward
 
@@ -282,30 +282,30 @@ def state_trans(model,state_trans_pd,shocks,t=None):
 
     pi_plus = (1-par.rhopi)*par.pi_star + par.rhopi*pi_pd - par.Rpi*R_b_pd + epsn_pi_plus 
 
-    R_plus = epsn_R_plus * ((1+par.R_star)*((pi_plus)/par.pi_star)**((par.A*(par.R_star+1))/(par.R_star-1)) +1) #next period nominal interest rate adjusted by centralbank
+    R_plus = epsn_R_plus * ((1+par.R_star)*((1+pi_plus)/(1+par.pi_star))**((par.A*(par.R_star+1))/(par.R_star-1)) +1) #next period nominal interest rate adjusted by centralbank
 
     R_e_plus = pi_plus - R_plus + epsn_e_plus #next period equity returns
   
-    q_plus = (par.q_h*(R_e_plus - R_plus) + q_pd + epsn_h_plus) #next period real house prices
+    q_plus = (par.q_h*(R_e_plus - R_plus) + q_pd + epsn_h_plus)/(1+pi_plus) #next period real house prices
     
-    w_plus = (par.gamma * psi_plus * w_pd)/(1+pi_plus) #next period wage
+    w_plus = (par.gamma * psi_plus * w_pd) #next period wage
 	
     R_q_plus = (q_plus - q_pd)/q_pd 
 
     R_d_plus = R_plus + par.eps_rp
     
     #pi_plus = pi_plus/ 100
-    #print(f"Inflation on avg: {round(torch.mean(pi_plus).item(), 5)}")
+    print(f"Inflation on avg: {round(torch.mean(pi_plus).item(), 5)}")
     #R_plus = R_plus/ 100
-    #print(f"Nominal interest on avg: {round(torch.mean(R_plus).item(), 5)}")
+    print(f"Nominal interest on avg: {round(torch.mean(R_plus).item(), 5)}")
     #R_e_plus = R_e_plus / 100 #percentage
-    #print(f"Stock retun on avg: {round(torch.mean(R_e_plus).item(), 5)}")
+    print(f"Stock retun on avg: {round(torch.mean(R_e_plus).item(), 5)}")
     #R_q_plus =  R_q_plus / 100 #percentage
-    #print(f"House return on avg: {round(torch.mean(R_q_plus).item(), 5)}")
+    print(f"House return on avg: {round(torch.mean(R_q_plus).item(), 5)}")
     
     # d. calculate money holdings next period and rolling debt
     #m_plus = (1+R_plus)* b_pd/(1+pi_plus) + (1+R_e_plus)*e_pd/(1+pi_plus) + (1+R_q_plus)*h_pd/(1+pi_plus)
-    m_plus = (1+R_plus*b_pd)/(1+pi_plus) + (1+R_e_plus)*e_pd/(1+pi_plus) + (1+R_q_plus)*h_pd/(1+pi_plus) - (par.lbda + R_d_plus)*d_pd/(1+pi_plus)
+    m_plus = (1+R_plus*b_pd)/(1+pi_plus) + (1+R_e_plus)*e_pd/(1+pi_plus) + (1+R_q_plus)*h_pd - (par.lbda + R_d_plus)*d_pd/(1+pi_plus) -(h_pd/(1+pi_plus))*abs(q_plus - q_pd)
     d_plus = d_n_pd/(1+pi_plus) + (1-par.lbda)*d_pd/(1+pi_plus)    
     
     #print(f"Money t+1 on avg: {round(torch.mean(m_plus).item(), 5)}")
