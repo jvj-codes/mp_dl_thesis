@@ -39,18 +39,18 @@ class WealthBehaviorModelClass(DLSolverClass):
         par.T_retired = 67 #retirement at year
         
         ## parameters of the model
-        par.beta = 0.95     #discount factor
+        par.beta = 0.99     #discount factor
         par.j = 0.01         #relative preference weight of house holdings
         par.A = 1.3         #taylor rule coefficient
         par.pi_star = 0.02  #target inflation rate
-        par.gamma = 1.06 #1.03 gives decreasing labor     #wage growth
-        par.R_star = (1+par.pi_star)/par.beta -1  #target nominal interest rate
+        par.gamma = 1.03 #1.03 gives decreasing labor     #wage growth
+        par.R_star = 0.03 #(1+par.pi_star)/par.beta -1  #target nominal interest rate
         par.rhopi = 0.3     #persistence of inflation 
         par.vartheta = 0.7  #fraction of wealth to determine limit of debt
-        par.eta = 1.00  #1.1       #labor supply schedule
+        par.eta = 1.1  #1.1       #labor supply schedule
         par.lbda = 0.2      #minimum payment due
         par.q_h = 0.5       #spread importance
-        par.eps_rp = 0.04   #risk premium
+        par.eps_rp = 0.02   #risk premium
         par.Rpi = 0.1            #impact of interest rate on inflation lagged
         
         ### income
@@ -69,9 +69,9 @@ class WealthBehaviorModelClass(DLSolverClass):
         par.psi_mu = 0         #wage shock mean zero 
         par.Npsi = 4
         
-        par.Q_loc = 10    #equity returns shock (mean) student-t distributed
+        par.Q_loc = 12    #equity returns shock (mean) student-t distributed
         par.Q_nu = 4        #equity returns degrees of freedom
-        par.Q_scale = 20  #equity returns shock (std. dev) student-t distributed
+        par.Q_scale = 15  #equity returns shock (std. dev) student-t distributed
         par.NQ = 4          #equity returns shock quadrature nodes
         
         par.R_sigma = 0.0005  #monetary policy shock (std. dev) log normal mean = 0

@@ -295,19 +295,19 @@ def state_trans(model,state_trans_pd,shocks,t=None):
     R_d_plus = R_plus + par.eps_rp
     
     #pi_plus = pi_plus/ 100
-    print(f"Inflation on avg: {round(torch.mean(pi_plus).item(), 5)}")
+    #print(f"Inflation on avg: {round(torch.mean(pi_plus).item(), 5)}")
     #R_plus = R_plus/ 100
-    print(f"Nominal interest on avg: {round(torch.mean(R_plus).item(), 5)}")
+    #print(f"Nominal interest on avg: {round(torch.mean(R_plus).item(), 5)}")
     #R_e_plus = R_e_plus / 100 #percentage
-    print(f"Stock retun on avg: {round(torch.mean(R_e_plus).item(), 5)}")
+    #print(f"Stock retun on avg: {round(torch.mean(R_e_plus).item(), 5)}")
     #R_q_plus =  R_q_plus / 100 #percentage
-    print(f"House return on avg: {round(torch.mean(R_q_plus).item(), 5)}")
+    #print(f"House return on avg: {round(torch.mean(R_q_plus).item(), 5)}")
     
     # d. calculate money holdings next period and rolling debt
     #m_plus = (1+R_plus)* b_pd/(1+pi_plus) + (1+R_e_plus)*e_pd/(1+pi_plus) + (1+R_q_plus)*h_pd/(1+pi_plus)
-    m_plus = (1+R_plus*b_pd)/(1+pi_plus) + (1+R_e_plus)*e_pd/(1+pi_plus) + (1+R_q_plus)*h_pd - (par.lbda + R_d_plus)*d_pd/(1+pi_plus) -(h_pd/(1+pi_plus))*abs(q_plus - q_pd)
-    d_plus = d_n_pd/(1+pi_plus) + (1-par.lbda)*d_pd/(1+pi_plus)    
-    
+    m_plus = (1+R_plus*b_pd)/(1+pi_plus) + (1+R_e_plus)*e_pd/(1+pi_plus) + (1+R_q_plus)*h_pd - (par.lbda + R_d_plus)*(d_pd+d_n_pd)/(1+pi_plus) -(h_pd/(1+pi_plus))*abs(q_plus - q_pd)
+    #d_plus = d_n_pd/(1+pi_plus) + (1-par.lbda)*d_pd/(1+pi_plus)    
+    d_plus = (1-par.lbda)*(d_pd+d_n_pd)/(1+pi_plus)
     #print(f"Money t+1 on avg: {round(torch.mean(m_plus).item(), 5)}")
     # e. finalize
     #states_plus = torch.stack((w_plus,m_plus,q_plus,pi_plus,R_plus,R_e_plus),dim=-1)
