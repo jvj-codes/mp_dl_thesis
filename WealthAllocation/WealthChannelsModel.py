@@ -41,23 +41,23 @@ class WealthBehaviorModelClass(DLSolverClass):
         ## parameters of the model
         par.beta = 0.99     #discount factor
         par.j = 0.01         #relative preference weight of house holdings
-        par.A = 1.3         #taylor rule coefficient
-        par.pi_star = 0.02  #target inflation rate
-        par.gamma = 1.03 #1.03 gives decreasing labor     #wage growth
-        par.R_star = 0.03 #(1+par.pi_star)/par.beta -1  #target nominal interest rate
+        par.A = 1.3#1.3         #taylor rule coefficient
+        par.pi_star = 0.02 #0.02  #target inflation rate
+        par.gamma = 1.02625 #1.03 gives decreasing labor     #wage growth
+        par.R_star = 0.03 #target nominal interest rate
         par.rhopi = 0.3     #persistence of inflation 
-        par.vartheta = 0.7  #fraction of wealth to determine limit of debt
-        par.eta = 1.1  #1.1       #labor supply schedule
+        par.vartheta = 6.6 # 0.7  #fraction of wealth to determine limit of debt
+        par.eta = 1.01  #1.1       #labor supply schedule
         par.lbda = 0.2      #minimum payment due
         par.q_h = 0.5       #spread importance
-        par.eps_rp = 0.02   #risk premium
+        par.eps_rp = 0.06   #risk premium
         par.Rpi = 0.1            #impact of interest rate on inflation lagged
         
         ### income
         par.kappa_base = 1.0 # base
         par.kappa_growth = 0.000 # income growth #kappa before 0.03
         par.kappa_growth_decay = 0.1 # income growth decay
-        par.kappa_retired = 0.7 # replacement rate
+        par.kappa_retired = 0.71 # replacement rate
         
         ##testing
         #par.nu = 2.0
