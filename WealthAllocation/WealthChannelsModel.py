@@ -53,11 +53,12 @@ class WealthBehaviorModelClass(DLSolverClass):
         par.eps_rp = 0.06   #risk premium
         par.Rpi = 0.18            #impact of interest rate on inflation lagged
         par.theta = 1.065
+
         ### income
         par.kappa_base = 1.0 # base
         par.kappa_growth = 0.03 # income growth #kappa before 0.03
         par.kappa_growth_decay = 0.1 # income growth decay
-        par.kappa_retired = 0.7 # replacement rate
+        par.kappa_retired = 0.71 # replacement rate
         
         ##testing
         #par.nu = 2.0

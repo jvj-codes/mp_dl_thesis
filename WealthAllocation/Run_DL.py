@@ -47,7 +47,7 @@ for model_key, label in model_DL.items():
     axes[1,1].plot(np.mean(model_DL[model_key].sim.actions[:, :, 3].cpu().numpy()/ total_asset, axis=1), lw = 2) # bond share
     axes[1,2].plot(np.mean(model_DL[model_key].sim.actions[:, :, 4].cpu().numpy()/ total_asset, axis=1), lw = 2) # house share
 
-figs.suptitle("Actions patient beta = 0.99")
+figs.suptitle("Actions patient beta = 0.99, std mp = 0.0005")
 axes[0,0].legend()
 axes[0,0].set_title('Labor Supply')
 axes[0,1].set_title('Debt Share')
@@ -63,7 +63,9 @@ for model_key, label in model_DL.items():
     axes[0,1].plot(np.mean(model_DL[model_key].sim.outcomes[:, :,  1].cpu().numpy(), axis=1), lw = 2) # labor share
     axes[1,0].plot(np.mean(model_DL[model_key].sim.outcomes[:, :,  2].cpu().numpy(), axis=1), lw = 2) # debt share
     axes[1,1].plot(np.mean(model_DL[model_key].sim.outcomes[:, :,  3].cpu().numpy(), axis=1), lw = 2) # debt share
+
 figs.suptitle("Outcomes patient beta = 0.99")
+
 axes[0,0].legend()
 axes[0,0].set_title('Consumption')
 axes[0,1].set_title('House Holdings')
@@ -82,7 +84,7 @@ for model_key, label in model_DL.items():
     axes[2,1].plot(np.mean(model_DL[model_key].sim.states[:, :, 5].cpu().numpy(), axis=1), lw = 2) # bond share
     axes[2,2].plot(np.mean(model_DL[model_key].sim.states[:, :, 6].cpu().numpy(), axis=1), lw = 2) # house share
 
-figs.suptitle("States patient beta = 0.99")
+figs.suptitle("States patient beta = 0.99, std mp = 0.0005")
 axes[0,0].legend()
 axes[0,0].set_title('Wage')
 axes[0,1].set_title('Money holdings')
