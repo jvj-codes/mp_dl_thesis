@@ -63,7 +63,7 @@ for model_key, label in model_DL.items():
     axes[0,1].plot(np.mean(model_DL[model_key].sim.outcomes[:, :,  1].cpu().numpy(), axis=1), lw = 2) # labor share
     axes[1,0].plot(np.mean(model_DL[model_key].sim.outcomes[:, :,  2].cpu().numpy(), axis=1), lw = 2) # debt share
     axes[1,1].plot(np.mean(model_DL[model_key].sim.outcomes[:, :,  3].cpu().numpy(), axis=1), lw = 2) # debt share
-figs.suptitle("Outcomes patient beta = 0.90")
+figs.suptitle("Outcomes patient beta = 0.99")
 axes[0,0].legend()
 axes[0,0].set_title('Consumption')
 axes[0,1].set_title('House Holdings')

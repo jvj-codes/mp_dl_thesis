@@ -97,10 +97,10 @@ def outcomes(model, states, actions, t0 = 0, t=None):
     alpha_h = actions[...,4]  # house share
     
     ## normalize portfolio allocation to 1
-    total_alpha = alpha_e + alpha_b + alpha_h + 1e-8
-    alpha_e_norm = alpha_e/total_alpha
-    alpha_b_norm = alpha_b/total_alpha
-    alpha_h_norm = alpha_h/total_alpha
+    total_alpha = alpha_e + alpha_b + alpha_h 
+    alpha_e_norm = alpha_e /total_alpha
+    alpha_b_norm = alpha_b /total_alpha
+    alpha_h_norm = alpha_h /total_alpha
     
     # d. calculate outcomes 
     # compute funds before and after retirement
@@ -134,7 +134,7 @@ def outcomes(model, states, actions, t0 = 0, t=None):
     #print(f"housing price on avg. {round(torch.mean(q).item())}")
     #print(f"housing on avg. {round(torch.mean(h).item())}")
     #print(f"consumption on avg. {round(torch.mean(c).item())}")
-    #print(f"housing on avg. {round(torch.mean(h).item())}")
+    #print(f"allocation on avg. {round(torch.mean((1-alpha_h_norm)*(1-alpha_e_norm)*(1-alpha_b_norm)).item())}")
         
     return torch.stack((c, h_n, n_act, x),dim=-1)
         
@@ -225,7 +225,7 @@ def state_trans_pd(model,states,actions,outcomes,t0=0,t=None):
     b = alpha_b_norm * x
     e = alpha_e_norm*(1-alpha_b_norm) * x
     
-    #print(f"bonds on avg: {round(torch.mean(b).item(), 5)}")
+    #print(f"debt avg: {round(torch.mean(d_n).item(), 5)}")
     #if torch.mean(x).item() > 0:
     #print(f"labor supply on avg: {round(torch.mean(n_act).item(), 5)}")
     #print(f"w on avg: {round(torch.mean(w).item(), 5)}")
@@ -288,8 +288,9 @@ def state_trans(model,state_trans_pd,shocks,t=None):
   
     q_plus = (par.q_h*(R_e_plus - R_plus) + q_pd + epsn_h_plus)/(1+pi_plus) #next period real house prices
     
-    w_plus = (par.gamma * psi_plus * w_pd) #next period wage
+    w_plus = ((par.gamma - par.theta*(R_b_pd - par.R_star)) * psi_plus * w_pd) #next period wage
 	
+    #print(f"wage on avg {round(torch.mean(w_plus).item())}")
     R_q_plus = (q_plus - q_pd)/q_pd 
 
     R_d_plus = R_plus + par.eps_rp
