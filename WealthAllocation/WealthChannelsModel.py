@@ -192,9 +192,9 @@ class WealthBehaviorModelClass(DLSolverClass):
         # b. policy activation functions and clipping
         if par.KKT:
             ## n, alpha_d, alpha_e, alpha_b, alpha_h
-            train.policy_activation_final = ['sigmoid', 'sigmoid', 'sigmoid','sigmoid','sigmoid','sigmoid','softplus']
+            train.policy_activation_final = ['sigmoid', 'sigmoid', 'sigmoid','sigmoid','sigmoid','softplus','softplus']
             train.min_actions = torch.tensor([0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000],dtype=dtype,device=device) #minimum action value n, alpha_d, alpha_e, alpha_b, alpha_h
-            train.max_actions = torch.tensor([0.9999, 0.9999, 0.9999, 0.9999, 0.9999, 0.9999, np.inf],dtype=dtype,device=device) #maximum action value n, alpha_d, alpha_e, alpha_b, alpha_h
+            train.max_actions = torch.tensor([0.9999, 0.9999, 0.9999, 0.9999, 0.9999, np.inf, np.inf],dtype=dtype,device=device) #maximum action value n, alpha_d, alpha_e, alpha_b, alpha_h
             
         else: 
             ## n, alpha_d, alpha_e, alpha_b, alpha_h
@@ -218,13 +218,13 @@ class WealthBehaviorModelClass(DLSolverClass):
             train.start_train_policy = 50
             
         if train.algoname == 'DeepFOC':
-            train.eq_w = torch.tensor([3.0, 3.0, 3.0, 3.0, 5.0],dtype=dtype,device=device) #revisit this
+            train.eq_w = torch.tensor([3.0, 3.0, 3.0, 3.0, 3.0, 5.0, 5.0],dtype=dtype,device=device) #revisit this
             
         if train.algoname == 'DeepSimulate':
             pass
         else:
             if par.KKT:
-                train.epsilon_sigma = np.array([0.1,0.1,0.1,0.1,0.1,0.1,0.0]) #revisit this
+                train.epsilon_sigma = np.array([0.1,0.1,0.1,0.1,0.1,0.0,0.0]) #revisit this
                 train.epsilon_sigma_min = np.array([0.0,0.0,0.0,0.0,0.0,0.0,0.0])
             else:
                 train.epsilon_sigma = np.array([0.1,0.1,0.1,0.1,0.1]) #revisit this
