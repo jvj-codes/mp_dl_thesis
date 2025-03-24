@@ -39,13 +39,13 @@ def utility(c, h, n, par):
 	#return torch.log(c) + par.j * torch.log(h) + par.vphi * ((1-n)**(1-par.nu))/(1-par.nu)
 
 def marg_util_c(c: float) -> float:
-    return 1/c
+    return c**(-par.sigma_int)
 
 def marg_util_h(h: float, par: tuple) -> float:
-    return par.j * 1/h
+    return par.j * h**(-par.sigma_int)
 
 def marg_util_n(n: float, par: tuple) -> float:
-    return -n**(par.varphi -1)
+    return -n**(par.eta)
 
 def inverse_marg_util(u: float) -> float:
     return 1/u
@@ -105,14 +105,15 @@ def outcomes(model, states, actions, t0 = 0, t=None):
     # d. calculate outcomes 
     # compute funds before and after retirement
     if t is None: #when solving for DeepVPD or DeepFOC
-        T,N = states.shape[-1]
-        kappa = par.kappa.reshape(par.T,1,1).repeat(1,N,train.Nquad)/(1+pi)
+        T = states.shape[0] 
+        N = states.shape[1]
+        kappa = par.kappa[:T].reshape(-1,1,1).repeat(1,N,train.Nquad)/(1+pi)
         
         if par.T_retired == par.T: #condition if retirement year is equal to full time period
-            x = m + kappa[:par.T-1]*w*n_act + alpha_d*par.vartheta*w*n_act
+            x = m + kappa[:par.T]*w*n_act + alpha_d*par.vartheta*w*n_act
         else:
-            x_before = m + kappa[:par.T_retired]*w*n_act + alpha_d*par.vartheta*w*n_act
-            x_after = m + kappa[par.T_retired] * torch.ones_like(w[par.T_retired:])
+            x_before = m[:par.T_retired] + kappa[:par.T_retired]*w[:par.T_retired]*n_act[:par.T_retired] + alpha_d[:par.T_retired]*par.vartheta*w[:par.T_retired]*n_act[:par.T_retired]
+            x_after = m[par.T_retired:] + kappa[par.T_retired:] * torch.ones_like(w[par.T_retired:])
             x = torch.cat((x_before, x_after), dim=0)
     else: #when simulating
          real_kappa = par.kappa[t] / (1+pi)
@@ -129,6 +130,24 @@ def outcomes(model, states, actions, t0 = 0, t=None):
     
     ## consumption
     c = (1-alpha_h_norm)*(1-alpha_e_norm)*(1-alpha_b_norm)*x
+
+    ## new debt 
+    if t is None:  # solving phase (DeepVPD or DeepFOC)
+        T = w.shape[0]  # time dimension
+        mask = (torch.arange(T, device=w.device) < par.T_retired).float().reshape(-1, 1, 1)
+        d_n = alpha_d * par.vartheta * w * n_act * mask  # zero out after retirement
+        
+    else: #DeepSimulate
+        if t < par.T_retired:
+            d_n = alpha_d*par.vartheta*w*n_act
+        else: 
+            d_n = torch.zeros(w.shape, device=w.device)
+
+    # bonds    
+    b = alpha_b_norm * x
+
+    # equity
+    e = alpha_e_norm*(1-alpha_b_norm) * x
     
     #print(f"funds on avg {round(torch.mean(x).item())}")
     #print(f"housing price on avg. {round(torch.mean(q).item())}")
@@ -136,7 +155,7 @@ def outcomes(model, states, actions, t0 = 0, t=None):
     #print(f"consumption on avg. {round(torch.mean(c).item())}")
     #print(f"allocation on avg. {round(torch.mean((1-alpha_h_norm)*(1-alpha_e_norm)*(1-alpha_b_norm)).item())}")
         
-    return torch.stack((c, h_n, n_act, x),dim=-1)
+    return torch.stack((c, h_n, n_act, x, b, e, d_n),dim=-1)
         
 #%% Reward
 
@@ -185,12 +204,17 @@ def state_trans_pd(model,states,actions,outcomes,t0=0,t=None):
     # a. unpack model parameters and model settings for training
     par = model.par
     train = model.train
+    device = train.device
+
     
     # b. get outcomes
     c = outcomes[...,0]
     h = outcomes[...,1]
     n = outcomes[...,2]
     x = outcomes[...,3]
+    b = outcomes[...,4]
+    e = outcomes[...,5]
+    d_n = outcomes[...,6]
     
     #print(f"consumption on avg: {round(torch.mean(c).item(), 5)}")
     
@@ -211,19 +235,25 @@ def state_trans_pd(model,states,actions,outcomes,t0=0,t=None):
     alpha_h = actions[...,4]  # house share
     
     ## normalize portfolio allocation to 1
-    total_alpha = alpha_e + alpha_b
-    alpha_e_norm = alpha_e/total_alpha
-    alpha_b_norm = alpha_b/total_alpha
-    alpha_h_norm = alpha_h/total_alpha
+    #total_alpha = alpha_e + alpha_b
+    #alpha_e_norm = alpha_e/total_alpha
+    #alpha_b_norm = alpha_b/total_alpha
+    #alpha_h_norm = alpha_h/total_alpha
     
     # e. post-decision 
-    if t < par.T_retired:
-        d_n = alpha_d*par.vartheta*w*n_act
-    else: 
-        d_n = torch.zeros((w.shape))
-        
-    b = alpha_b_norm * x
-    e = alpha_e_norm*(1-alpha_b_norm) * x
+   #if t is None:  # solving phase (DeepVPD or DeepFOC)
+   #    T = w.shape[0]  # time dimension
+   #    mask = (torch.arange(T, device=w.device) < par.T_retired).float().reshape(-1, 1, 1)
+   #    d_n = alpha_d * par.vartheta * w * n_act * mask  # zero out after retirement
+   #    
+   #else: #DeepSimulate
+   #    if t < par.T_retired:
+   #        d_n = alpha_d*par.vartheta*w*n_act
+   #    else: 
+   #        d_n = torch.zeros(w.shape, device=device)
+   #    
+   #b = alpha_b_norm * x
+   #e = alpha_e_norm*(1-alpha_b_norm) * x
     
     #print(f"debt avg: {round(torch.mean(d_n).item(), 5)}")
     #if torch.mean(x).item() > 0:
@@ -232,7 +262,9 @@ def state_trans_pd(model,states,actions,outcomes,t0=0,t=None):
     #print(f"funds avaliable on avg: {round(torch.mean(x).item(), 5)}")
     #print(f"money holdings on avg: {round(torch.mean(m).item(), 5)}")
     #return torch.stack((b, e, h, w, q, pi),dim=-1)
-    return torch.stack((b, e, h, w, q, d, d_n, pi, R_b),dim=-1)
+    return torch.stack([b.to(device),e.to(device),h.to(device),w.to(device),q.to(device),d.to(device),d_n.to(device),pi.to(device),R_b.to(device)], dim=-1)
+
+    #return torch.stack((b, e, h, w, q, d, d_n, pi, R_b),dim=-1)
 
 
 
@@ -299,7 +331,7 @@ def state_trans(model,state_trans_pd,shocks,t=None):
     #pi_plus = pi_plus/ 100
     #print(f"Inflation on avg: {round(torch.mean(pi_plus).item(), 5)}")
     #R_plus = R_plus/ 100
-    #print(f"Nominal interest on avg: {round(torch.mean(R_plus).item(), 5)}")
+    #rint(f"Nominal interest on avg: {round(torch.mean(R_plus).item(), 5)}")
     #print(f"Taylor rule on avg: {round(torch.mean(R_plus_taylor).item(), 5)}")
     #R_e_plus = R_e_plus / 100 #percentage
     #print(f"Stock retun on avg: {round(torch.mean(R_e_plus).item(), 5)}")
@@ -350,26 +382,39 @@ def eval_KKT(model,states,states_plus,actions,actions_plus,outcomes,outcomes_plu
     pi_plus  = states_plus[...,4]  # inflation at time t
     R_b_plus  = states_plus[...,5]  # nominal interest rate at time t
     R_e_plus  = states_plus[...,6]  # return on equities at time t
+
+    R_q_plus = (q_plus - q)/q 
+    R_d_plus = R_b_plus + par.eps_rp
         
     # c. outcomes at time t
     c = outcomes[...,0]
     h = outcomes[...,1]
     n = outcomes[...,2]
     x = outcomes[...,3]
+    b = outcomes[...,4]
+    e = outcomes[...,5]
+    d_n = outcomes[...,6]
     
     # d. get actions
-    c_act = actions[...,0] # Consumption
-    h_act = actions[...,1]  # Housing investment
-    n_act = actions[...,2] # Hours worked
-    e_act = actions[...,3]  # Equity investment
-    b_act = actions[...,4]  # Bond investment
-    d_act = actions[...,5]  # New debt
+    n_act   = actions[...,0]  # labor hours share
+    alpha_d = actions[...,1]  # debt share
+    alpha_e = actions[...,2]  # equity share
+    alpha_b = actions[...,3]  # bond share
+    alpha_h = actions[...,4]  # house share
+
+    total_alpha = alpha_e + alpha_b + alpha_h 
+    alpha_e_norm = alpha_e /total_alpha
+    alpha_b_norm = alpha_b /total_alpha
+    alpha_h_norm = alpha_h /total_alpha
     
     # e. outcomes at time t
     c_plus = outcomes_plus[...,0]
     h_plus = outcomes_plus[...,1]
     n_plus = outcomes_plus[...,2]
     x_plus = outcomes_plus[...,3]
+    b_plus = outcomes_plus[...,4]
+    e_plus = outcomes_plus[...,5]
+    d_n_plus = outcomes_plus[...,6]
     
     # f. multiplier at time t
     lbda_t = actions[...,6]
@@ -382,26 +427,76 @@ def eval_KKT(model,states,states_plus,actions,actions_plus,outcomes,outcomes_plu
     
     # h. compute marginal utility at time t+1
     marg_util_c_plus = marg_util_c(c_plus)
-    marg_util_h_plus = marg_util_c(h_plus)
-    marg_util_n_plus = marg_util_c(n_plus)
+    marg_util_h_plus = marg_util_h(h_plus)
+    marg_util_n_plus = marg_util_n(n_plus)
     
     # i. first order conditions
     ## 1. compute expected marginal utility at time t+1
     exp_marg_util_plus = torch.sum(train.quad_w[None,None,:]*marg_util_c_plus,dim=-1)
     
-    ## 2. euler equation equity allocation
-    FOC_alpha_e = inverse_marg_util(beta[:-1]*(1+eq_plus)*exp_marg_util_plus)
-    FOC_alpha_e_terminal = torch.zeros_like(FOC_c_[-1])
-    FOC_alpha_e = torch.cat((FOC_c_,FOC_c_terminal[None,...]),dim=0)
+    ## 2. euler equation bond allocation
+    alpha_b_marg = marg_util_c_t * (alpha_e_norm + alpha_h_norm - alpha_h_norm*alpha_e_norm-1)*x + marg_util_h_t * (alpha_e_norm * alpha_h_norm-alpha_h_norm)*x
+    FOC_alpha_b = alpha_b_marg + beta[:-1]*exp_marg_util_plus*((1+R_b_plus)*x - (1+R_e_plus)*alpha_e_norm*x + (1+R_q_plus)*x*(alpha_h_norm*alpha_e_norm - alpha_h_norm))
+    FOC_alpha_b_terminal = torch.zeros_like(FOC_b[-1])
+    FOC_alpha_b = torch.cat((FOC_b,FOC_b_terminal[None,...]),dim=0)
+
+    ## 3. euler equation for equity share
+    alpha_e_marg = marg_util_c_t * (alpha_b_norm + alpha_e_norm - alpha_e_norm*alpha_b_norm-1)*x + marg_util_h_t * (1-alpha_b_norm-alpha_e_norm+alpha_e_norm*alpha_h_norm)*x
+    FOC_alpha_e = alpha_e_marg + beta[:-1]*exp_marg_util_plus*((1+R_b_plus)*(1-alpha_b_norm)*x + (1+R_q_plus)*x*(alpha_h_norm*alpha_b_norm - alpha_h_norm))
+    FOC_alpha_e_terminal = torch.zeros_like(FOC_b[-1])
+    FOC_alpha_e = torch.cat((FOC_e,FOC_e_terminal[None,...]),dim=0)
+
+    ## 4. euler equation for housing share
+    alpha_h_marg = marg_util_c_t * (alpha_b_norm + alpha_h_norm - alpha_h_norm*alpha_b_norm-1)*x + marg_util_h_t * (-alpha_h_norm+alpha_h_norm*alpha_b_norm)*x
+    FOC_alpha_h = alpha_h_marg + beta[:-1]*exp_marg_util_plus*((1+R_q_plus)*x*(1-alpha_e_norm)*(1-alpha_b_norm)-(1-alpha_e_norm)*(1-alpha_b_norm)*abs(q_plus - q))
+    FOC_alpha_h_terminal = torch.zeros_like(FOC_h[-1])
+    FOC_alpha_h = torch.cat((FOC_h,FOC_h_terminal[None,...]),dim=0)
+
+    ## 5. euler equation for debt share
+    alpha_d_marg = marg_util_c_t * (1-alpha_h_norm)*(1-alpha_e_norm)*(1-alpha_b_norm)*par.vartheta*w*n_act + marg_util_h_t * alpha_h_norm*(1-alpha_e_norm)*(1-alpha_b_norm)*par.vartheta*w*n_act
+    FOC_alpha_d_debt = beta[:-1]*exp_marg_util_plus*(par.lbda + R_b_plus)*par.vartheta*w*n_act
+    FOC_alpha_d_money = beta[:-1]*exp_marg_util_plus*((1+R_b_plus)*alpha_b_norm + (1+R_e_plus)*alpha_e_norm*(1-alpha_b_norm) + (1+R_q_plus)*alpha_h_norm*(1-alpha_e_norm)*(1-alpha_b_norm))*par.vartheta*w*n_act 
+    FOC_alpha_d = alpha_d_marg - FOC_alpha_d_debt + FOC_alpha_d_money
+    FOC_alpha_d_terminal = torch.zeros_like(FOC_d_[-1])
+    FOC_alpha_d = torch.cat((FOC_d,FOC_d_terminal[None,...]),dim=0)
+
+    ## 6. euler equation for labor share
+    n_marg = marg_util_c_t * (1-alpha_h_norm)*(1-alpha_e_norm)*(1-alpha_b_norm)*(x-d_n-m)/n_act + marg_util_h_t * alpha_h_norm*(1-alpha_e_norm)*(1-alpha_b_norm)*(x-d_n-m)/n_act
+    FOC_n = n_marg +  beta[:-1]*exp_marg_util_plus*((1+R_b_plus)*alpha_b_norm + (1+R_e_plus)*alpha_e_norm*(1-alpha_b_norm) + (1+R_q_plus)*alpha_h_norm*(1-alpha_e_norm)*(1-alpha_b_norm))*(x-d_n-m)/n_act
+    FOC_n_terminal = torch.zeros_like(FOC_n[-1])
+    FOC_n = torch.cat((FOC_n_,FOC_n_terminal[None,...]),dim=0)
+
     
-    # j. borrowing constraint
-    constraint = par.eta*(q*h_act + e_act + m + b_act) + par.vartheta - (1+par.eta)*d_act
-    slackness_ = constraint[-1] * mu_t[:-1]
-    slackness_terminal = constraint[-1]
-    slackness = torch.cat((slackness_,slackness_terminal[None,...]),dim=0)
-    
+    # j. borrowing constraint (debt constraint)
+    constraint1 = par.vartheta * w * n_act - d_n
+    slackness1_ = constraint1[:-1] * lbda_t[:-1]
+    slackness1_terminal = constraint1[-1]
+    slackness1 = torch.cat((slackness1_, slackness1_terminal[None,...]), dim=0)
+
+    # j.2: fallback constraint (in case d_n is not used — optional, context-dependent)
+    constraint2 = par.vartheta * w  # possibly for upper bound on debt
+    slackness2_ = constraint2[:-1] * lbda_t[:-1]
+    slackness2_terminal = constraint2[-1]
+    slackness2 = torch.cat((slackness2_ , slackness2_terminal[None,...]), dim=0)
+
+    # j.3: portfolio allocation budget constraint
+    constraint3 = alpha_b_norm + alpha_e_norm + alpha_h_norm - 1.0
+    slackness3_ = constraint3[:-1] * mu_t[:-1]
+    slackness3_terminal = constraint3[-1]
+    slackness3 = torch.cat((slackness3_, slackness3_terminal[None,...]), dim=0)
+
     # k. combine equations
-    eq = torch.stack((FOC_c**2,FOC_m**2,FOC_h**2, FOC_n**2,slackness),dim=-1)
+    eq = torch.stack((
+        FOC_alpha_b**2,
+        FOC_alpha_e**2,
+        FOC_alpha_h**2,
+        FOC_alpha_d**2,
+        FOC_n**2,
+        slackness1**2,
+        slackness2**2,
+        slackness3**2
+    ), dim=-1)
+
     
     return eq
     

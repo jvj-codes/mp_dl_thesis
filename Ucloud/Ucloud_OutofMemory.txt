@@ -1,0 +1,103 @@
+GPU 0: 2.19GB free
+GPU 1: 2.19GB free
+GPU 2: 2.19GB free
+Best GPU: 0
+started solving: 2025-03-24 16:37:25
+---------------------------------------------------------------------------
+OutOfMemoryError                          Traceback (most recent call last)
+Cell In[5], line 22
+     20 K_time = 1.0
+     21 model_DL['DeepVPD'] = WealthBehaviorModelClass(algoname='DeepVPD', device=device,train={'K_time': K_time})
+---> 22 model_DL['DeepVPD'].solve(do_print=True)
+
+File /work/rl_project/EconDLSolvers/EconDLSolvers/DLSolver.py:725, in DLSolverClass.solve(self, do_print, do_print_all, show_memory, postfix)
+    723 # ii. update neural nets
+    724 t0 = time.perf_counter()
+--> 725 self.algo.update_NN(self) # is different for each algorithm
+    726 info['time.update_NN'] += time.perf_counter() - t0
+    728 # iii. scheduler step
+
+File /work/rl_project/EconDLSolvers/EconDLSolvers/DeepVPD.py:64, in update_NN(model)
+     61 if train.terminal_actions_known: states = states[:-1] # policy not needed for terminal actions
+     63 # b. update value
+---> 64 aux.train_value(model,compute_target,value_loss_f,states_pd)
+     66 # c. update target value
+     67 if train.use_target_value: aux.update_target_value_network(model)
+
+File /work/rl_project/EconDLSolvers/EconDLSolvers/auxilliary.py:284, in train_value(model, compute_target, value_loss_f, *args)
+    280 info = model.info
+    282 if train.N_value_NN is None:
+--> 284 	train_value_(model,compute_target,value_loss_f,*args)
+    286 else:
+    287 
+    288 	# a. initialize
+    289 	epochs = 0
+
+File /work/rl_project/EconDLSolvers/EconDLSolvers/auxilliary.py:231, in train_value_(model, compute_target, value_loss_f, info_details, *args)
+    228 info = model.info
+    230 # b. compute target
+--> 231 target = compute_target(model,*args)
+    233 # c. prepare
+    234 best_loss = np.inf
+
+File /work/rl_project/EconDLSolvers/EconDLSolvers/DeepVPD.py:117, in compute_target(model, states_pd)
+    115 	actions_plus = torch.cat([actions_plus_before,actions_plus_after],dim=0)
+    116 else:
+--> 117 	actions_plus = model.eval_policy(policy_NN,states_plus,t0=1)
+    119 # iii. future reward
+    120 outcomes_plus = model.outcomes(states_plus,actions_plus,t0=1)
+
+File /work/rl_project/EconDLSolvers/EconDLSolvers/neural_nets.py:136, in eval_policy(model, NN, states, t0, t)
+    133 else:
+    134     scale_vec = None
+--> 136 actions = eval_NN(NN,par.T,states,scale_vec,t0,t)
+    137 actions = actions.clamp(train.min_actions,train.max_actions)
+    139 return actions
+
+File /work/rl_project/EconDLSolvers/EconDLSolvers/neural_nets.py:45, in eval_NN(NN, NNT, x, scale_vec, t0, t)
+     42 x_time_dummies = torch.cat((x_,eyeT),dim=-1) # shape = (T,Nx,Ninputs+NNT)
+     43 x_time_dummies = x_time_dummies.reshape((T*Nx,-1)) # shape = (T*Nx,Ninputs+NNT)		
+---> 45 return NN(x_time_dummies).reshape(*x.shape[:-1],-1)
+
+File /opt/conda/lib/python3.12/site-packages/torch/nn/modules/module.py:1739, in Module._wrapped_call_impl(self, *args, **kwargs)
+   1737     return self._compiled_call_impl(*args, **kwargs)  # type: ignore[misc]
+   1738 else:
+-> 1739     return self._call_impl(*args, **kwargs)
+
+File /opt/conda/lib/python3.12/site-packages/torch/nn/modules/module.py:1750, in Module._call_impl(self, *args, **kwargs)
+   1745 # If we don't have any hooks, we want to skip the rest of the logic in
+   1746 # this function, and just call forward.
+   1747 if not (self._backward_hooks or self._backward_pre_hooks or self._forward_hooks or self._forward_pre_hooks
+   1748         or _global_backward_pre_hooks or _global_backward_hooks
+   1749         or _global_forward_hooks or _global_forward_pre_hooks):
+-> 1750     return forward_call(*args, **kwargs)
+   1752 result = None
+   1753 called_always_called_hooks = set()
+
+File /work/rl_project/EconDLSolvers/EconDLSolvers/neural_nets.py:100, in Policy.forward(self, state)
+     97 """ Forward pass"""
+     99 # input layer
+--> 100 s = self.intermediate_activation(self.layers[0](state))
+    102 # hidden layers
+    103 for i in range(1,len(self.layers)-1):
+
+File /opt/conda/lib/python3.12/site-packages/torch/nn/modules/module.py:1739, in Module._wrapped_call_impl(self, *args, **kwargs)
+   1737     return self._compiled_call_impl(*args, **kwargs)  # type: ignore[misc]
+   1738 else:
+-> 1739     return self._call_impl(*args, **kwargs)
+
+File /opt/conda/lib/python3.12/site-packages/torch/nn/modules/module.py:1750, in Module._call_impl(self, *args, **kwargs)
+   1745 # If we don't have any hooks, we want to skip the rest of the logic in
+   1746 # this function, and just call forward.
+   1747 if not (self._backward_hooks or self._backward_pre_hooks or self._forward_hooks or self._forward_pre_hooks
+   1748         or _global_backward_pre_hooks or _global_backward_hooks
+   1749         or _global_forward_hooks or _global_forward_pre_hooks):
+-> 1750     return forward_call(*args, **kwargs)
+   1752 result = None
+   1753 called_always_called_hooks = set()
+
+File /opt/conda/lib/python3.12/site-packages/torch/nn/modules/linear.py:125, in Linear.forward(self, input)
+    124 def forward(self, input: Tensor) -> Tensor:
+--> 125     return F.linear(input, self.weight, self.bias)
+
+OutOfMemoryError: CUDA out of memory. Tried to allocate 22.60 GiB. GPU 0 has a total capacity of 79.19 GiB of which 2.19 GiB is free. Including non-PyTorch memory, this process has 76.99 GiB memory in use. Of the allocated memory 62.42 GiB is allocated by PyTorch, and 13.91 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)

@@ -27,14 +27,14 @@ device = choose_gpu()
 model_DL = {}
 
 # DeepSimulate
-K_time = 2 #20.0
-model_DL['DeepSimulate'] = WealthBehaviorModelClass(algoname='DeepSimulate', device=device,train={'K_time': K_time})
-model_DL['DeepSimulate'].solve(do_print=True)
+#K_time = 2 #20.0
+#model_DL['DeepSimulate'] = WealthBehaviorModelClass(algoname='DeepSimulate', device=device,train={'K_time': K_time})
+#model_DL['DeepSimulate'].solve(do_print=True)
 
 # # DeepVPD
-# K_time = 1.0
-# model_DL['DeepVPD'] = WealthBehaviorModelClass(algoname='DeepVPD', device=device,train={'K_time': K_time})
-# model_DL['DeepVPD'].solve(do_print=True)
+K_time = 1.0
+model_DL['DeepVPD'] = WealthBehaviorModelClass(algoname='DeepVPD', device=device,train={'K_time': K_time})
+model_DL['DeepVPD'].solve(do_print=True)
 
 
 figs, axes = plt.subplots(2, 3, figsize=(16, 9))
