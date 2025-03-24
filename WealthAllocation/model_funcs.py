@@ -211,7 +211,7 @@ def state_trans_pd(model,states,actions,outcomes,t0=0,t=None):
     alpha_h = actions[...,4]  # house share
     
     ## normalize portfolio allocation to 1
-    total_alpha = alpha_e + alpha_b + alpha_h + 1e-8
+    total_alpha = alpha_e + alpha_b
     alpha_e_norm = alpha_e/total_alpha
     alpha_b_norm = alpha_b/total_alpha
     alpha_h_norm = alpha_h/total_alpha
@@ -282,8 +282,8 @@ def state_trans(model,state_trans_pd,shocks,t=None):
 
     pi_plus = (1-par.rhopi)*par.pi_star + par.rhopi*pi_pd - par.Rpi*R_b_pd + epsn_pi_plus 
     
-    R_plus_taylor = par.R_star + pi_plus + 0.5 * (pi_plus - par.pi_star)
-    R_plus = epsn_R_plus * ((1+par.R_star)*((1+pi_plus)/(1+par.pi_star))**((par.A*(par.R_star+1))/(par.R_star-1)) +1) #next period nominal interest rate adjusted by centralbank
+    #R_plus_taylor = par.R_star + pi_plus + 0.5 * (pi_plus - par.pi_star)
+    R_plus = epsn_R_plus * (par.R_star+1) * ((1+pi_plus)/(1+par.pi_star))**((par.A*(par.R_star+1))/(par.R_star)) #next period nominal interest rate adjusted by centralbank
 
     R_e_plus = pi_plus - R_plus + epsn_e_plus #next period equity returns
   
@@ -299,8 +299,8 @@ def state_trans(model,state_trans_pd,shocks,t=None):
     #pi_plus = pi_plus/ 100
     #print(f"Inflation on avg: {round(torch.mean(pi_plus).item(), 5)}")
     #R_plus = R_plus/ 100
-    print(f"Nominal interest on avg: {round(torch.mean(R_plus).item(), 5)}")
-    print(f"Taylor rule on avg: {round(torch.mean(R_plus_taylor).item(), 5)}")
+    #print(f"Nominal interest on avg: {round(torch.mean(R_plus).item(), 5)}")
+    #print(f"Taylor rule on avg: {round(torch.mean(R_plus_taylor).item(), 5)}")
     #R_e_plus = R_e_plus / 100 #percentage
     #print(f"Stock retun on avg: {round(torch.mean(R_e_plus).item(), 5)}")
     #R_q_plus =  R_q_plus / 100 #percentage
@@ -389,25 +389,10 @@ def eval_KKT(model,states,states_plus,actions,actions_plus,outcomes,outcomes_plu
     ## 1. compute expected marginal utility at time t+1
     exp_marg_util_plus = torch.sum(train.quad_w[None,None,:]*marg_util_c_plus,dim=-1)
     
-    ## 2. euler equation
-    FOC_c_ = inverse_marg_util(beta[:-1]*(1+eq_plus)*exp_marg_util_plus) * c - 1
-    FOC_c_terminal = torch.zeros_like(FOC_c_[-1])
-    FOC_c = torch.cat((FOC_c_,FOC_c_terminal[None,...]),dim=0)
-    
-    ## 3. money demand
-    FOC_m_ = (c_act - 1/(mu_t*par.eta))*par.chi - m
-    FOC_m_terminal = torch.zeros_like(FOC_m_[-1])
-    FOC_m = torch.cat((FOC_m_,FOC_m_terminal[None,...]),dim=0)
-    
-    ## 4. housing demand
-    FOC_h_ = (c_act/q - 1/(mu_t*par.eta*q))*par.j - h_act
-    FOC_h_terminal = torch.zeros_like(FOC_h_[-1])
-    FOC_h = torch.cat((FOC_h_,FOC_h_terminal[None,...]),dim=0)
-    
-    ## 5. labor supply
-    FOC_n_ = 1/(1/c_act - mu_t*par.vartheta)*n**(par.varphi-1) - w
-    FOC_n_terminal = torch.zeros_like(FOC_n_[-1])
-    FOC_n = torch.cat((FOC_n_,FOC_n_terminal[None,...]),dim=0)
+    ## 2. euler equation equity allocation
+    FOC_alpha_e = inverse_marg_util(beta[:-1]*(1+eq_plus)*exp_marg_util_plus)
+    FOC_alpha_e_terminal = torch.zeros_like(FOC_c_[-1])
+    FOC_alpha_e = torch.cat((FOC_c_,FOC_c_terminal[None,...]),dim=0)
     
     # j. borrowing constraint
     constraint = par.eta*(q*h_act + e_act + m + b_act) + par.vartheta - (1+par.eta)*d_act
