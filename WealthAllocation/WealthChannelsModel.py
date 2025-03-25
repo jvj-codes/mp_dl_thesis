@@ -35,8 +35,8 @@ class WealthBehaviorModelClass(DLSolverClass):
         par.seed = 1
         
         # a. model
-        par.T = 80 #lifetime (working + retirement)
-        par.T_retired = 67 #retirement at year
+        par.T = 62 #lifetime (working + retirement) (working from 18 till 67, pension till age 80)
+        par.T_retired = 49 #retirement at year
         
         ## parameters of the model
         par.beta = 0.99     #discount factor
@@ -91,16 +91,16 @@ class WealthBehaviorModelClass(DLSolverClass):
         ## Interval values of initial states and actions REVISIT
         
         par.pi_min = 0.02 # minimum inflation of 2% 
-        par.pi_max = 0.04 # maximum inflation of 4%
+        par.pi_max = 0.03 # maximum inflation of 4%
         
         par.R_min = 0.03    # minimum wage
-        par.R_max = 0.05 # maximum wage, no bounds?
+        par.R_max = 0.04 # maximum wage, no bounds?
         
 
         # b. solver settings
         
         # states, actions and shocks
-        par.Nstates = 7
+        par.Nstates = 8
         par.Nstates_pd = 9 #8
         par.Nshocks = 5
         par.Nactions = 5
@@ -125,8 +125,8 @@ class WealthBehaviorModelClass(DLSolverClass):
         device = train.device
         
         if not par.full: # for solving without GPU
-            par.T = 80 #lifetime (working + retirement)
-            par.T_retired = 70 #retirement years
+            par.T = 62 #lifetime (working + retirement) (working from 18 till 67, pension till age 80)
+            par.T_retired = 49 #retirement at year
             sim.N = 10_000
             
         if par.KKT:
@@ -301,10 +301,12 @@ class WealthBehaviorModelClass(DLSolverClass):
         # g. draw initial house prices
         q0 = torch.ones((N,))/(1+pi0)
         #q0 = torch.zeros((N,))
+
+        R_q0 = torch.zeros((N,))
         
         #print(f"initial interest rate: {round(torch.mean(R0).item(), 5)}, initial inflation: {round(torch.mean(pi0).item(), 5)}, initial house price {round(torch.mean(q0).item(), 5)}")
         #return torch.stack((w0,m0,q0,pi0,R0,R_e0),dim=-1)
-        return torch.stack((w0,m0,d0,q0,pi0,R0,R_e0),dim=-1)
+        return torch.stack((w0,m0,d0,q0,pi0,R0,R_e0,R_q0),dim=-1)
     
     def draw_exploration_shocks(self,epsilon_sigma,N): 
         """ draw exploration shockss """ 
@@ -346,6 +348,8 @@ class WealthBehaviorModelClass(DLSolverClass):
     state_trans_pd = model_funcs.state_trans_pd
     state_trans = model_funcs.state_trans
     exploration = model_funcs.exploration
+
+    eval_equations_FOC = model_funcs.eval_equations_FOC
 
     
     
