@@ -35,30 +35,30 @@ class WealthBehaviorModelClass(DLSolverClass):
         par.seed = 1
         
         # a. model
-        par.T = 62 #lifetime (working + retirement) (working from 18 till 67, pension till age 80)
+        par.T = 62 #lifetime (working + retirement)
         par.T_retired = 49 #retirement at year
         
         ## parameters of the model
-        par.beta = 0.99     #discount factor
-        par.j = 0.01         #relative preference weight of house holdings
-        par.A = 1.3         #taylor rule coefficient
-        par.pi_star = 0.02  #target inflation rate
-        par.gamma = 1.03  #1.03 gives decreasing labor     #wage growth
-        par.R_star = 0.03 #(1+par.pi_star)/par.beta -1  #target nominal interest rate
-        par.rhopi = 0.9#0.3     #persistence of inflation 
-        par.vartheta = 2.50  #fraction of wealth to determine limit of debt
-        par.eta = 1.1  #1.1       #labor supply schedule
-        par.lbda = 0.2      #minimum payment due
-        par.q_h = 0.5       #spread importance
-        par.eps_rp = 0.06   #risk premium
-        par.Rpi = 0.25            #impact of interest rate on inflation lagged
+        par.beta = 0.99           #discount factor
+        par.j = 0.01              #relative preference weight of house holdings
+        par.A = 1.3               #taylor rule coefficient
+        par.pi_star = 0.02        #target inflation rate
+        par.gamma = 1.025          #1.03 gives decreasing labor     #wage growth 
+        par.R_star = 0.03         #(1+par.pi_star)/par.beta -1  #target nominal interest rate
+        par.rhopi = 0.9#0.3       #persistence of inflation 
+        par.vartheta = 2.50       #fraction of wealth to determine limit of debt
+        par.eta = 1.1 #1.5  #1.1       #labor supply schedule
+        par.lbda = 0.2            #minimum payment due
+        par.q_h = 0.05            #spread importance
+        par.eps_rp = 0.02         #risk premium # 0.06
+        par.Rpi = 0.35            #impact of interest rate on inflation lagged
         par.theta = 1.065
 
         ### income
-        par.kappa_base = 1.0 # base
-        par.kappa_growth = 0.01 # income growth #kappa before 0.03
-        par.kappa_growth_decay = 0.1 # income growth decay
-        par.kappa_retired = 0.71 # replacement rate
+        par.kappa_base = 1         # income base
+        par.kappa_growth = 0.00      # income growth #kappa before 0.03
+        par.kappa_growth_decay = 0.01 # income growth decay
+        par.kappa_retired = 0.71 #0.71     # replacement rate
         
         ##testing
         #par.nu = 2.0
@@ -70,9 +70,9 @@ class WealthBehaviorModelClass(DLSolverClass):
         par.psi_mu = 0         #wage shock mean zero 
         par.Npsi = 4
         
-        par.Q_loc = 7    #equity returns shock (mean) student-t distributed
+        par.Q_loc = 10    #equity returns shock (mean) student-t distributed
         par.Q_nu = 4        #equity returns degrees of freedom
-        par.Q_scale = 20  #equity returns shock (std. dev) student-t distributed
+        par.Q_scale = 20  #equity returns shock (std. dev) student-t distributed 20 works
         par.NQ = 4          #equity returns shock quadrature nodes
         
         par.R_sigma = 0.0005  #monetary policy shock (std. dev) log normal mean = 0
@@ -84,17 +84,17 @@ class WealthBehaviorModelClass(DLSolverClass):
         par.Npi  = 4           #inflation shock quardrature nodes
         
         par.h_sigma = 0.0005    #house price shock (std. dev) log normal dis
-        par.h_mu = 0.00         #house price shock mean 
+        par.h_mu = 1 #0.00         #house price shock mean 
         par.Nh = 4
         
         
         ## Interval values of initial states and actions REVISIT
         
-        par.pi_min = 0.02 # minimum inflation of 2% 
-        par.pi_max = 0.03 # maximum inflation of 4%
+        par.pi_min = 0.01 # minimum inflation of 1% 
+        par.pi_max = 0.02 # maximum inflation of 2%
         
-        par.R_min = 0.03    # minimum wage
-        par.R_max = 0.04 # maximum wage, no bounds?
+        par.R_min = 0.03   
+        par.R_max = 0.04 
         
 
         # b. solver settings
@@ -125,8 +125,8 @@ class WealthBehaviorModelClass(DLSolverClass):
         device = train.device
         
         if not par.full: # for solving without GPU
-            par.T = 62 #lifetime (working + retirement) (working from 18 till 67, pension till age 80)
-            par.T_retired = 49 #retirement at year
+            par.T = 80 #lifetime (working + retirement)
+            par.T_retired = 67 #retirement years
             sim.N = 10_000
             
         if par.KKT:
@@ -299,8 +299,11 @@ class WealthBehaviorModelClass(DLSolverClass):
         d0 = torch.zeros((N,))
         
         # g. draw initial house prices
-        q0 = torch.ones((N,))/(1+pi0)
+        #epsn_h = torch.exp(torch.normal(par.h_mu, par.h_sigma, size=(N,))) 
+        #q0 = (par.q_h*(R_e0 -  R0)  + epsn_h)/(1+pi0) 
+        #print(f"initial house price {round(torch.mean(q0).item(), 5)}")
         #q0 = torch.zeros((N,))
+        q0 = torch.ones((N,))/(1+pi0)*50
 
         R_q0 = torch.zeros((N,))
         
