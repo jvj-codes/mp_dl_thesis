@@ -40,12 +40,11 @@ class WealthBehaviorModelClass(DLSolverClass):
         par.T_retired = 49 #retirement at year
         
         ## parameters of the model
-        par.beta = 0.99           #discount factor
-        #par.beta = torch.distributions.Uniform(0.95, 0.99).sample((N,))
+        par.beta = [0.95, 0.99] #0.99           #discount factor, float for fixed beta and list for heterogenous
         par.j = 0.01              #relative preference weight of house holdings
         par.A = 1.3               #taylor rule coefficient
         par.pi_star = 0.02       #target inflation rate #baseline 0.02
-        par.gamma = 1.04       #wage growth  #basline 1.0205
+        par.gamma = 1.06  #1.04     #wage growth  #basline 1.0205
         par.R_star = 0.03         #(1+par.pi_star)/par.beta -1  #target nominal interest rate
         par.rhopi = 0.9#0.3       #persistence of inflation 
         par.vartheta = 2.50       #fraction of wealth to determine limit of debt
@@ -59,19 +58,23 @@ class WealthBehaviorModelClass(DLSolverClass):
         ### income
         par.kappa_base = 1         # income base
         par.kappa_growth = 0.0000      # income growth #kappa before 0.03
-        par.kappa_growth_decay = 0.0001 # income growth decay
+        par.kappa_growth_decay = 0.1 #0.0001 # income growth decay
         par.kappa_retired = 0.71 #0.71     # replacement rate
         par.n_retired_fixed = 0
+
+        #### initial wage and money holdings std
+        par.sigma_m0 = 0.5   #0.3
+        par.sigma_w0 = 0.2 #0.2
         
         ##testing
-        par.nu = 2 # 2 før med DEEPSIMULATE VIRKEREDE FINT
+        par.nu = 5 #2 # 2 før med DEEPSIMULATE VIRKEREDE FINT
         par.bequest = 1
         
         #par.vphi = 0.8
-        par.sigma_int =  2.5 #inverse of intertemporal elasticity of consumption and money holdings
+        par.sigma_int = 2.5 #inverse of intertemporal elasticity of consumption and money holdings
 
         ## mean and std of shocks
-        par.psi_sigma = 0.0005 #wage shock (std std.) log_normal distributed
+        par.psi_sigma = 0.05 #wage shock (std std.) log_normal distributed
         par.psi_mu = 1e-6         #wage shock mean zero 
         par.Npsi = 4
         
@@ -87,6 +90,11 @@ class WealthBehaviorModelClass(DLSolverClass):
         par.pi_sigma = 0.2 #0.0005  #inflation shock (std. dev) distributed
         par.pi_mu = 1e-6           #inflation shock mean
         par.Npi  = 4           #inflation shock quardrature nodes
+        par.pi_vol = True
+        if par.pi_vol: 
+            par.pi_mult = 1.05 #approx 1 basis point 
+        else: 
+            par.pi_mult = None
         
         par.h_sigma = 0.0005    #house price shock (std. dev) log normal dis
         par.h_mu = 1 #0.00         #house price shock mean 
@@ -95,11 +103,11 @@ class WealthBehaviorModelClass(DLSolverClass):
         
         ## Interval values of initial states and actions REVISIT
         
-        par.pi_min = 0.01 # minimum inflation of 1% 
+        par.pi_min = 0.02 # minimum inflation of 1% 
         par.pi_max = 0.02 # maximum inflation of 2%
         
         par.R_min = 0.03   
-        par.R_max = 0.04 
+        par.R_max = 0.03 
         
 
         # b. solver settings
@@ -116,7 +124,7 @@ class WealthBehaviorModelClass(DLSolverClass):
         par.NDC = 0 # number of discrete choices
         
         # c. simulation
-        sim.N = 100_000 #5000 #500 #1000 #5000 # 100_000 #100_000 # number of agents 
+        sim.N = 100_000#5000 #500 #1000 #5000 # 100_000 #100_000 # number of agents 
         sim.reps = 10 # number of repetitions
         
     def allocate(self):
@@ -132,7 +140,7 @@ class WealthBehaviorModelClass(DLSolverClass):
         if not par.full: # for solving without GPU
             par.T = 75 #lifetime (working + retirement)
             par.T_retired = 49 #retirement at year
-            sim.N = 100_000 #500 #1000 #5000 #10_000
+            sim.N = 10_000 #5000 #500 #1000 #5000 #10_000
             
         if par.KKT:
             par.Nactions = 7 #revisit when focs are done
@@ -148,6 +156,9 @@ class WealthBehaviorModelClass(DLSolverClass):
             par.kappa[t] = par.kappa[t-1]*(1+par.kappa_growth)*(1-par.kappa_growth_decay)**(t-1)
 
         par.kappa[par.T_retired:] = par.kappa_retired * par.kappa_base #par.kappa[par.T_retired - 1]
+        #for t in range(par.T_retired, par.T):
+        #    par.kappa[t] = par.kappa[t-1] * (1 - par.kappa_growth_decay*100)**(t-1)  # decay 1% per year
+
         
         # c. quadrature
         par.psi, par.psi_w  = misc.log_normal_gauss_hermite(sigma = par.psi_sigma, n = par.Npsi, mu = par.psi_mu)
@@ -269,17 +280,156 @@ class WealthBehaviorModelClass(DLSolverClass):
         return quad, quad_w
 
     
-    def draw_shocks(self,N):
-        
+    #def draw_shocks(self,N):
+    #    
+    #    par = self.par
+    #    
+    #    psi = torch.exp(torch.normal(mean=par.psi_mu,std=par.psi_sigma, size=(par.T,N,)))
+    #    epsn_R = torch.exp(torch.normal(mean=par.R_mu, std=par.R_sigma, size=(par.T,N,))) / 100
+    #    epsn_pi = torch.exp(torch.normal(par.pi_mu, par.pi_sigma, size=(par.T,N,))) / 100
+    #    dist_Q = torch.distributions.StudentT(df=par.Q_nu, loc=par.Q_loc, scale=par.Q_scale)
+    #    epsn_q = dist_Q.sample((par.T,N)) / 100
+    #    epsn_h = torch.exp(torch.normal(par.h_mu, par.h_sigma, size=(par.T,N,)))
+    #    return torch.stack((psi, epsn_R, epsn_pi, epsn_q, epsn_h),dim=-1) 
+
+   #def draw_shocks(self, N):
+   #    par = self.par
+   #    T = par.T
+   #
+   #    if par.pi_vol:
+   #        # --- Markov switching volatility parameters ---
+   #        p_enter = 0.05   # prob of entering high-vol regime
+   #        p_exit  = 0.80   # prob of STAYING in high-vol regime once entered
+   #        pi_sigma_base = par.pi_sigma
+   #        pi_sigma_high = par.pi_mult * par.pi_sigma  # multiplier for high volatility
+   #    
+   #        # Initialize regime flags for all T
+   #        volatility_flags = torch.zeros(T, dtype=torch.bool)
+   #    
+   #        # Initialize first period to be in low volatility
+   #        current_state = 0  # 0 = low, 1 = high
+   #    
+   #        # Simulate Markov chain
+   #        for t in range(1, T):
+   #            if current_state == 0:
+   #                current_state = 1 if torch.rand(1).item() < p_enter else 0
+   #            else:
+   #                current_state = 1 if torch.rand(1).item() < p_exit else 0
+   #            volatility_flags[t] = bool(current_state)
+   #    
+   #        # Assign time-dependent std deviations
+   #        pi_sigma_vec = torch.full((T,), pi_sigma_base)
+   #        pi_sigma_vec[volatility_flags] = pi_sigma_high
+   #        epsn_pi = torch.exp(torch.normal(par.pi_mu, pi_sigma_vec.unsqueeze(1).expand(-1, N))) / 100
+   #    else:
+   #        epsn_pi = torch.exp(torch.normal(par.pi_mu, par.pi_sigma, size=(par.T,N,))) / 100
+   #
+   #    # --- Draw shocks ---
+   #    psi = torch.exp(torch.normal(mean=par.psi_mu, std=par.psi_sigma, size=(T, N)))
+   #    epsn_R = torch.exp(torch.normal(mean=par.R_mu, std=par.R_sigma, size=(T, N))) / 100
+   #    dist_Q = torch.distributions.StudentT(df=par.Q_nu, loc=par.Q_loc, scale=par.Q_scale)
+   #    epsn_q = dist_Q.sample((T, N)) / 100
+   #    epsn_h = torch.exp(torch.normal(par.h_mu, par.h_sigma, size=(T, N)))
+   #    return torch.stack((psi, epsn_R, epsn_pi, epsn_q, epsn_h), dim=-1)
+     #def draw_shocks(self, N):
+     #  par = self.par
+     #  T = par.T
+     #
+     #  # --- Inflation shocks with volatility regime switching ---
+     #  if par.pi_vol:
+     #      # Markov switching volatility
+     #      p_enter = 0.05
+     #      p_exit  = 0.80
+     #      pi_sigma_base = par.pi_sigma
+     #      pi_sigma_high = par.pi_mult * par.pi_sigma
+     #
+     #      volatility_flags = torch.zeros(T, dtype=torch.bool)
+     #      current_state = 0
+     #
+     #      for t in range(1, T):
+     #          if current_state == 0:
+     #              current_state = 1 if torch.rand(1).item() < p_enter else 0
+     #          else:
+     #              current_state = 1 if torch.rand(1).item() < p_exit else 0
+     #          volatility_flags[t] = bool(current_state)
+     #
+     #      # Draw inflation shocks (macro)
+     #      pi_sigma_vec = torch.full((T,), pi_sigma_base)
+     #      pi_sigma_vec[volatility_flags] = pi_sigma_high
+     #      epsn_pi = torch.exp(torch.normal(par.pi_mu, pi_sigma_vec)) / 100  # (T,)
+     #  else:
+     #      epsn_pi = torch.exp(torch.normal(par.pi_mu, par.pi_sigma, size=(T,))) / 100  # (T,)
+     #
+     #  epsn_pi = epsn_pi.unsqueeze(1).expand(-1, N)  # → shape (T, N), identical across agents at time t
+     #
+     #  # --- Interest rate shocks (macro) ---
+     #  epsn_R = torch.exp(torch.normal(par.R_mu, par.R_sigma, size=(T,))) / 100  # (T,)
+     #  epsn_R = epsn_R.unsqueeze(1).expand(-1, N)
+     #
+     #  # --- Equity return shocks (idiosyncratic) ---
+     #  dist_Q = torch.distributions.StudentT(df=par.Q_nu, loc=par.Q_loc, scale=par.Q_scale)
+     #  epsn_q = dist_Q.sample((T, N)) / 100
+     #
+     #  # --- Housing shocks (idiosyncratic) ---
+     #  epsn_h = torch.exp(torch.normal(par.h_mu, par.h_sigma, size=(T, N)))
+     #
+     #  # --- Income shocks (idiosyncratic, household-specific) ---
+     #  psi = torch.exp(torch.normal(mean=par.psi_mu, std=par.psi_sigma, size=(T, N)))
+     #
+     #  # --- Stack and return ---
+     #  return torch.stack((psi, epsn_R, epsn_pi, epsn_q, epsn_h), dim=-1)  # shape (T, N, 5)
+
+    def draw_shocks(self, N):
         par = self.par
-        
-        psi = torch.exp(torch.normal(mean=par.psi_mu,std=par.psi_sigma, size=(par.T,N,)))
-        epsn_R = torch.exp(torch.normal(mean=par.R_mu, std=par.R_sigma, size=(par.T,N,))) / 100
-        epsn_pi = torch.exp(torch.normal(par.pi_mu, par.pi_sigma, size=(par.T,N,))) / 100
+        T = par.T
+    
+        # --- Inflation shocks with volatility regime switching ---
+        if par.pi_vol:
+            # Markov switching volatility
+            p_enter = 0.05
+            p_exit  = 0.80
+            pi_sigma_base = par.pi_sigma
+            pi_sigma_high = par.pi_mult * par.pi_sigma
+    
+            volatility_flags = torch.zeros(T, dtype=torch.bool)
+            current_state = 0
+    
+            for t in range(1, T):
+                if current_state == 0:
+                    current_state = 1 if torch.rand(1).item() < p_enter else 0
+                else:
+                    current_state = 1 if torch.rand(1).item() < p_exit else 0
+                volatility_flags[t] = bool(current_state)
+    
+            # Draw inflation shocks (macro)
+            pi_sigma_vec = torch.full((T,), pi_sigma_base)
+            pi_sigma_vec[volatility_flags] = pi_sigma_high
+            epsn_pi = torch.exp(torch.normal(par.pi_mu, pi_sigma_vec)) / 100  # (T,)
+        else:
+            epsn_pi = torch.exp(torch.normal(par.pi_mu, par.pi_sigma, size=(T,))) / 100  # (T,)
+    
+        epsn_pi = epsn_pi.unsqueeze(1).expand(-1, N)  # → shape (T, N), identical across agents at time t
+    
+        # --- Interest rate shocks (macro) ---
+        epsn_R = torch.exp(torch.normal(par.R_mu, par.R_sigma, size=(T,))) / 100  # (T,)
+        epsn_R = epsn_R.unsqueeze(1).expand(-1, N)
+    
+        # --- Equity return shocks (idiosyncratic) ---
         dist_Q = torch.distributions.StudentT(df=par.Q_nu, loc=par.Q_loc, scale=par.Q_scale)
-        epsn_q = dist_Q.sample((par.T,N)) / 100
-        epsn_h = torch.exp(torch.normal(par.h_mu, par.h_sigma, size=(par.T,N,)))
-        return torch.stack((psi, epsn_R, epsn_pi, epsn_q, epsn_h),dim=-1) 
+        epsn_q = dist_Q.sample((T, N)) / 100
+    
+        # --- Housing shocks (idiosyncratic) ---
+        epsn_h = torch.exp(torch.normal(par.h_mu, par.h_sigma, size=(T, N)))
+    
+        # --- Income shocks (idiosyncratic, household-specific) ---
+        psi = torch.exp(torch.normal(mean=par.psi_mu, std=par.psi_sigma, size=(T, N)))
+    
+        # --- Stack and return ---
+        return torch.stack((psi, epsn_R, epsn_pi, epsn_q, epsn_h), dim=-1)  # shape (T, N, 5)
+
+
+
+
     
     def draw_initial_states(self,N,training=False): #atm uniform
         
@@ -289,19 +439,19 @@ class WealthBehaviorModelClass(DLSolverClass):
         pi0 = torch_uniform(par.pi_min, par.pi_max, size = (N,))
         
         # b. draw initial nominal interest rate
-        
         R0 = torch_uniform(par.R_min, par.R_max, size = (N,))
         
         # c. draw initial equity return
-        dist_e = torch.distributions.StudentT(df=par.Q_nu, loc=par.Q_loc, scale=par.Q_scale)
-        epsn_e = dist_e.sample((N,)) / 100
-        R_e0 = pi0 - R0 + epsn_e
+        R_e0 = torch.zeros((N,))
         
         # d. draw initial wage
-        w0 = torch.ones((N,))/(1+pi0)
+        #w0 = torch.ones((N,))/(1+pi0)
+        w0 = torch.exp(torch.normal(mean=-0.5*par.sigma_w0**2, std=par.sigma_w0, size=(N,))) / (1 + pi0)
         
         # e. draw initial money holdings
-        m0 = torch.ones((N,))/(1+pi0)
+        #m0 = torch.ones((N,))/(1+pi0)
+        m0 = torch.exp(torch.normal(mean=-0.5*par.sigma_m0**2, std=par.sigma_m0, size=(N,))) / (1 + pi0)
+        m0 = torch.clamp(m0, min=1e-3)
         
         # f. draw initial debt
         d0 = torch.zeros((N,))

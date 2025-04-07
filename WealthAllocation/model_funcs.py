@@ -221,8 +221,6 @@ def state_trans_pd(model,states,actions,outcomes,t0=0,t=None):
     e = outcomes[...,5]
     d_n = outcomes[...,6]
     
-    #print(f"consumption on avg: {round(torch.mean(c).item(), 5)}")
-    
     # c. get state observations
     w = states[...,0]  # inflation at time t
     m = states[...,1]   # real money holdings at time t
@@ -239,8 +237,6 @@ def state_trans_pd(model,states,actions,outcomes,t0=0,t=None):
     alpha_e = actions[...,2]  # equity share
     alpha_b = actions[...,3]  # bond share
     alpha_h = actions[...,4]  # house share
-    
-    #return torch.stack([b.to(device),e.to(device),h.to(device),w.to(device),q.to(device),d.to(device),d_n.to(device),pi.to(device),R_b.to(device)], dim=-1)
     return torch.stack([b,e,h,w,q,d,d_n,pi,R_b], dim=-1)
 
 
@@ -291,26 +287,20 @@ def state_trans(model,state_trans_pd,shocks,t=None):
 
     pi_plus = (1-par.rhopi)*par.pi_star + par.rhopi*pi_pd - par.Rpi*R_b_pd + epsn_pi_plus 
     
-    #R_plus_taylor = par.R_star + pi_plus + 0.5 * (pi_plus - par.pi_star)
     R_plus = epsn_R_plus * (par.R_star+1) * ((1+pi_plus)/(1+par.pi_star))**((par.A*(par.R_star+1))/(par.R_star)) #next period nominal interest rate adjusted by centralbank
 
     R_e_plus = pi_plus - R_plus + epsn_e_plus #next period equity returns
   
     q_plus = (par.q_h*(R_e_plus - R_plus) + q_pd + epsn_h_plus)/(1+pi_plus) #next period real house prices
-    #q_plus = (1+(1+R_e_plus - R_plus)*q_pd + epsn_h_plus)/(1+pi_plus) #next period real house prices
 
     if t is None:
-        #w_plus_working = ((par.gamma - par.theta*(R_b_pd - par.R_star)) * psi_plus * w_pd) / (1 + pi_plus)
-        #w_plus = w_plus_working * retirement_mask + w_pd * (1.0 - retirement_mask)* par.n_retired_fixed / (1 + pi_plus)
         w_plus_before = ((par.gamma - par.theta*(R_b_pd[:par.T_retired] - par.R_star)) * psi_plus[:par.T_retired] * w_pd[:par.T_retired]) * torch.ones_like(w_pd[:par.T_retired]) / (1 + pi_plus[:par.T_retired]) 
         w_plus_after = w_pd[par.T_retired:] / (1 + pi_plus[par.T_retired:])
         w_plus = torch.cat((w_plus_before, w_plus_after), dim=0)
     else:
         if t < par.T_retired:
-            #w_plus = par.kappa[t]*((par.gamma - par.theta*(R_b_pd - par.R_star)) * psi_plus * w_pd) / (1 + pi_plus)
             w_plus = ((par.gamma - par.theta*(R_b_pd - par.R_star)) * psi_plus * w_pd) / (1 + pi_plus)
         else:
-            #w_plus = par.kappa[t]*w_pd #/ (1 + pi_plus) # constant wage after retirement
             w_plus = w_pd / (1+pi_plus)
 
     R_q_plus = (q_plus - q_pd)/q_pd 
@@ -373,15 +363,57 @@ def terminal_reward_pd(model, states_pd):
 	return value_pd
 
 #%% Discount Factor
+#def discount_factor(model, states, t0=0, t=None):
+#    """
+#    Returns discount factors for each agent.
+#    - Supports fixed scalar beta: par.beta = 0.98
+#    - Supports heterogeneous beta: par.beta = [0.95, 0.99]
+#    """
+#    par = model.par
+#    device = states.device
+#
+#    N = states.shape[-2]  # assumes states is [T, N, ...] or [N, ...]
+#
+#    if isinstance(par.beta, float):
+#        return torch.full((states.shape[:-1]), par.beta, device=device)
+#
+#    elif isinstance(par.beta, (list, tuple)) and len(par.beta) == 2:
+#        beta_low, beta_high = par.beta
+#
+#        # If beta_vec is not already generated, cache it
+#        if not hasattr(par, "beta_vec") or par.beta_vec.shape[0] != N:
+#            par.beta_vec = torch.distributions.Uniform(beta_low, beta_high).sample((N,)).to(device)
+#
+#        if states.ndim == 3:
+#            return par.beta_vec.unsqueeze(0).expand(states.shape[0], -1)  # [T, N]
+#        elif states.ndim == 2:
+#            return par.beta_vec  # [N]
+#        else:
+#            raise RuntimeError(f"Unexpected state shape {states.shape}")
+#
+#    else:
+#        raise ValueError("par.beta must be a float or a list/tuple with two values.")
 
-def discount_factor(model,states,t0=0,t=None):
-	""" discount factor """
+def discount_factor(model, states, t0=0, t=None):
+    """ Discount factor with optional heterogeneity. """
+    par = model.par
 
-	par = model.par
+    if isinstance(par.beta, float):
+        beta = par.beta * torch.ones_like(states[..., 0], device=states.device)
 
-	beta = par.beta*torch.ones_like(states[...,0])
-	
-	return beta 
+    elif isinstance(par.beta, (list, tuple)):
+        beta_low, beta_high = par.beta
+        shape = states[..., 0].shape
+        dist = torch.distributions.Uniform(beta_low, beta_high)
+        beta = dist.sample(shape).to(states.device)
+
+    else:
+        raise ValueError("par.beta must be either a float or a list/tuple [low, high]")
+
+    return beta
+
+
+
 
 #%% Equations for DeepFOC
 
