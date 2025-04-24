@@ -12,7 +12,7 @@ from misc import expand_dim
 
 #%% Utility
 
-def utility(c, h, n, par):
+def utility(c, h, m, n, par):
 	"""
     utility function 
     
@@ -35,7 +35,9 @@ def utility(c, h, n, par):
         function returns the utility of a household.
         
     """
-	return c**(1-par.sigma_int)/(1-par.sigma_int) + par.j *h**(1-par.sigma_int)/(1-par.sigma_int) - par.nu*(n**(1+par.eta))/(1+par.eta)
+	return c**(1-par.sigma_int)/(1-par.sigma_int) +par.varphi*m**(1-par.sigma_int)/(1-par.sigma_int) +par.j *h**(1-par.sigma_int)/(1-par.sigma_int) - par.nu*(n**(1+par.eta))/(1+par.eta)
+	#return torch.log(c) + par.j * torch.log(h) - n**par.eta/par.eta 
+	#return torch.log(c) + par.j * torch.log(h) + par.vphi * ((1-n)**(1-par.nu))/(1-par.nu)
 
 def marg_util_c(c, par) -> float:
     return c**(-par.sigma_int)
@@ -94,12 +96,14 @@ def outcomes(model, states, actions, t0 = 0, t=None):
     alpha_e = actions[...,2]  # equity share
     alpha_b = actions[...,3]  # bond share
     alpha_h = actions[...,4]  # house share
+    alpha_m = actions[...,5]  # house share
     
     ## normalize portfolio allocation to 1
-    #total_alpha = alpha_e + alpha_b + alpha_h 
-    alpha_e_norm = alpha_e #/total_alpha
-    alpha_b_norm = alpha_b #/total_alpha
-    alpha_h_norm = alpha_h #/total_alpha
+    total_alpha = alpha_e + alpha_b + alpha_h + alpha_m
+    alpha_e_norm = alpha_e /total_alpha
+    alpha_b_norm = alpha_b /total_alpha
+    alpha_h_norm = alpha_h /total_alpha
+    alpha_m_norm = alpha_m/total_alpha
 
     
     # d. calculate outcomes 
@@ -107,6 +111,7 @@ def outcomes(model, states, actions, t0 = 0, t=None):
     if t is None: #when solving for DeepVPD or DeepFOC
         T = states.shape[0] 
         N = states.shape[1]
+        n_retired = n_act[par.T_retired - 1] 
         
         if pi.ndim == 3:  # (T, N, Nquad) → solving mode
             kappa = par.kappa[:T].reshape(-1,1,1).repeat(1,N,train.Nquad) 
@@ -116,37 +121,37 @@ def outcomes(model, states, actions, t0 = 0, t=None):
         if par.T_retired == par.T: #condition if retirement year is equal to full time period
             x = m + kappa[:par.T]*w*n_act + alpha_d*par.vartheta*w*n_act
             d_n = alpha_d*par.vartheta*w*n_act
-            
         else:
             d_n_before = alpha_d[:par.T_retired]*par.vartheta*w[:par.T_retired]*n_act[:par.T_retired]
             d_n_after = torch.zeros_like(w[par.T_retired:])
-            d_n = torch.cat((d_n_before, d_n_after), dim=0)
-            
             n_act_before = n_act[:par.T_retired]
-            n_act_after = torch.ones_like(w[par.T_retired:])*par.n_retired
-            n_act = torch.cat((n_act_before, n_act_after), dim=0)
-            
-            x_before = m[:par.T_retired] + kappa[:par.T_retired]*w[:par.T_retired]*n_act_before + d_n_before
-            x_after = m[par.T_retired:] + kappa[par.T_retired:]*w[par.T_retired:]*n_act_after
+            n_act_after = torch.zeros_like(w[par.T_retired:])
+            x_before = m[:par.T_retired] + kappa[:par.T_retired]*w[:par.T_retired]*n_act[:par.T_retired] + d_n_before
+            x_after = m[par.T_retired:] + kappa[par.T_retired:] * torch.ones_like(w[par.T_retired:])*w[par.T_retired:]*n_retired + d_n_after
             x = torch.cat((x_before, x_after), dim=0)
-            
-        
+            d_n = torch.cat((d_n_before, d_n_after), dim=0)
+            n_act = torch.cat((n_act_before, n_act_after), dim=0)
     else: #when simulating
-        
+         real_kappa = par.kappa[t] # / (1+pi)
+         if t == par.T_retired - 1:
+             par.n_retired_fixed = (actions[:,0]).detach().clone()
+             #print(f" w retired: {par.w_retired_fixed}")
          if t < par.T_retired:
              d_n = alpha_d * par.vartheta * w * n_act
-             x = m + par.kappa[t]*w*n_act + d_n
+             x = m + real_kappa*w*n_act + d_n
          else:   
+             #real_kappa = par.kappa[t] # / (1+pi)
              d_n = torch.zeros_like(w)
-             n_act = par.n_retired*torch.ones_like(w)
-             x = m + par.kappa[t]*w*n_act
-             #x = m + w*n_act
+             n_act = torch.zeros_like(w)
+             alpha_d = torch.zeros_like(w)
+             x = m + real_kappa * w * par.n_retired_fixed
+    
     ## housing
     h_n = alpha_h_norm*(1-alpha_e_norm)*(1-alpha_b_norm)*x #/q
     h_n = torch.clamp(h_n, min=1e-6)
     
     ## consumption
-    c = (1-alpha_h_norm)*(1-alpha_e_norm)*(1-alpha_b_norm)*x
+    c = (1-alpha_h_norm)*(1-alpha_e_norm)*(1-alpha_b_norm)*(1-alpha_m_norm)*x
     c = torch.clamp(c, min=1e-6)
 
     # bonds    
@@ -157,7 +162,11 @@ def outcomes(model, states, actions, t0 = 0, t=None):
     e = alpha_e_norm*(1-alpha_b_norm) * x
     e = torch.clamp(e, min=1e-6)
     
-    return torch.stack((c, h_n, n_act, x, b, e, d_n),dim=-1)
+    # money with clamping
+    m_bar = alpha_m_norm*(1-alpha_h_norm)*(1-alpha_e_norm)*(1-alpha_b_norm)*x
+    m_bar = torch.clamp(m_bar, min=1e-6)
+    
+    return torch.stack((c, h_n, n_act, x, b, e, d_n, m_bar),dim=-1)
         
 #%% Reward
 
@@ -169,12 +178,13 @@ def reward(model,states,actions,outcomes,t0=0,t=None):
     c = outcomes[...,0]
     h = outcomes[...,1]
     n = outcomes[...,2]
+    m = outcomes[...,7]
     
     # b. utility
-    u = utility(c, h, n, par)
-
-    u = torch.clamp(u, min=-1e6, max=1e6)
-
+    u = utility(c, h, n, m, par)
+    #print(f"print avg utility: {u}")
+    #print(f"utility on avg: {round(torch.mean(u).item(), 5)}")
+    #print(f"house holding on avg: {round(torch.mean(h).item(), 5)}")
     # c. finalize
     return u 
 
@@ -217,6 +227,7 @@ def state_trans_pd(model,states,actions,outcomes,t0=0,t=None):
     b = outcomes[...,4]
     e = outcomes[...,5]
     d_n = outcomes[...,6]
+    m_bar = outcomes[...,7]
     
     # c. get state observations
     w = states[...,0]  # inflation at time t
@@ -234,14 +245,7 @@ def state_trans_pd(model,states,actions,outcomes,t0=0,t=None):
     alpha_e = actions[...,2]  # equity share
     alpha_b = actions[...,3]  # bond share
     alpha_h = actions[...,4]  # house share
-
-    states_pd = torch.stack([b,e,h,w,q,d,d_n,pi,R_b], dim=-1)
-
-    if par.Nstates_fixed > 0:
-        fixed_states = states[..., -par.Nstates_fixed:]
-        states_pd = torch.cat((states_pd, fixed_states), dim=-1)
-        
-    return states_pd
+    return torch.stack([b,e,h,w,q,d,d_n,pi,R_b,m_bar], dim=-1)
 
 
 
@@ -250,7 +254,7 @@ def state_trans(model,state_trans_pd,shocks,t=None):
     par = model.par
     train = model.train
     
-    # b. unpack transition post-decision
+    # b. unpack outcomes
     b_pd = state_trans_pd[...,0] 
     e_pd = state_trans_pd[...,1] 
     h_pd = state_trans_pd[...,2]
@@ -260,14 +264,8 @@ def state_trans(model,state_trans_pd,shocks,t=None):
     d_n_pd = state_trans_pd[...,6]
     pi_pd = state_trans_pd[...,7]
     R_b_pd = state_trans_pd[...,8]
-
-    if par.Nstates_fixed > 0:
-        beta = state_trans_pd[...,9]
-        
-        if t is None:
-            #beta = expand_to_quad(beta, train.Nquad)    
-            beta = beta.unsqueeze(-1)  
-            beta = beta.unsqueeze(2).expand(-1, -1, train.Nquad, -1)  # (T, N, Nquad, 1)
+    m_bar_pd = state_trans_pd[...,9]
+    
     # c. unpack shocks
     psi_plus = shocks[:,0]
     epsn_R_plus = shocks[:,1]
@@ -319,25 +317,10 @@ def state_trans(model,state_trans_pd,shocks,t=None):
     R_d_plus = R_plus + par.eps_rp
     
 
-    m_plus = (1+R_plus*b_pd)/(1+pi_plus) + (1+R_e_plus)*e_pd/(1+pi_plus) + (1+R_q_plus)*h_pd - (par.lbda + R_d_plus)*(d_pd+d_n_pd)/(1+pi_plus) -(h_pd/(1+pi_plus))*abs(q_plus - q_pd)
+    m_plus = m_bar_pd/(1+pi_plus) + (1+R_plus*b_pd)/(1+pi_plus) + (1+R_e_plus)*e_pd/(1+pi_plus) + (1+R_q_plus)*h_pd - (par.lbda + R_d_plus)*(d_pd+d_n_pd)/(1+pi_plus) -(h_pd/(1+pi_plus))*abs(q_plus - q_pd)
     d_plus = (1-par.lbda)*(d_pd+d_n_pd)/(1+pi_plus)
-    
     # e. finalize
     states_plus = torch.stack((w_plus,m_plus,d_plus,q_plus,pi_plus,R_plus,R_e_plus,R_q_plus),dim=-1)
-
-    
-    #print('states_plus shape:', states_plus.shape)
-    #print('beta shape:', beta.shape)
-
-    if par.Nstates_fixed > 0:
-        # Ensure beta has the correct shape
-        if beta.ndim == 1:  # shape (N,)
-            beta = beta.unsqueeze(-1)  # → shape (N,1)
-        elif beta.ndim == 3 and beta.shape[-1] != 1:  # shape (T,N,Nquad)
-            beta = beta.unsqueeze(-1)  # → shape (T,N,Nquad,1)
-
-        states_plus = torch.cat((states_plus, beta), dim=-1)
-
     return states_plus
 
 
@@ -370,7 +353,7 @@ def terminal_reward_pd(model, states_pd):
 	par = model.par
 	dtype = train.dtype
 	device = train.device
-
+	#m = states[...,1]   # real money holdings at time t
 	b_pd = states_pd[..., 0]  # bond holdings
 	e_pd = states_pd[..., 1]  # equity holdings
 	h_pd = states_pd[..., 2]  # housing holdings
@@ -383,20 +366,61 @@ def terminal_reward_pd(model, states_pd):
 		# avoid log(0) or negative values
 		net_wealth = torch.clamp(b_pd + e_pd + h_pd - d_pd, min=1e-6)
 		u = par.bequest * (net_wealth ** (1 - par.sigma_int)) / (1 - par.sigma_int)
-		#u = par.bequest * torch.log(net_wealth)
 		#u = par.bequest * torch.log(m - d_pd)
 
 	value_pd = u.unsqueeze(-1)
 	return value_pd
 
 #%% Discount Factor
+#def discount_factor(model, states, t0=0, t=None):
+#    """
+#    Returns discount factors for each agent.
+#    - Supports fixed scalar beta: par.beta = 0.98
+#    - Supports heterogeneous beta: par.beta = [0.95, 0.99]
+#    """
+#    par = model.par
+#    device = states.device
+#
+#    N = states.shape[-2]  # assumes states is [T, N, ...] or [N, ...]
+#
+#    if isinstance(par.beta, float):
+#        return torch.full((states.shape[:-1]), par.beta, device=device)
+#
+#    elif isinstance(par.beta, (list, tuple)) and len(par.beta) == 2:
+#        beta_low, beta_high = par.beta
+#
+#        # If beta_vec is not already generated, cache it
+#        if not hasattr(par, "beta_vec") or par.beta_vec.shape[0] != N:
+#            par.beta_vec = torch.distributions.Uniform(beta_low, beta_high).sample((N,)).to(device)
+#
+#        if states.ndim == 3:
+#            return par.beta_vec.unsqueeze(0).expand(states.shape[0], -1)  # [T, N]
+#        elif states.ndim == 2:
+#            return par.beta_vec  # [N]
+#        else:
+#            raise RuntimeError(f"Unexpected state shape {states.shape}")
+#
+#    else:
+#        raise ValueError("par.beta must be a float or a list/tuple with two values.")
+
 def discount_factor(model, states, t0=0, t=None):
+    """ Discount factor with optional heterogeneity. """
     par = model.par
-    if par.Nstates_fixed > 0:
-        beta = states[..., -1]  # assume beta is last
+
+    if isinstance(par.beta, float):
+        beta = par.beta * torch.ones_like(states[..., 0], device=states.device)
+
+    elif isinstance(par.beta, (list, tuple)):
+        beta_low, beta_high = par.beta
+        shape = states[..., 0].shape
+        dist = torch.distributions.Uniform(beta_low, beta_high)
+        beta = dist.sample(shape).to(states.device)
+
     else:
-        beta = par.beta * torch.ones_like(states[..., 0])
+        raise ValueError("par.beta must be either a float or a list/tuple [low, high]")
+
     return beta
+
 
 
 
@@ -431,10 +455,10 @@ def eval_KKT(model, states, states_plus, actions, actions_plus, outcomes, outcom
     lbda_t, mu_t = actions[..., 5], actions[..., 6]
 
     # Normalize portfolio shares
-    #total_alpha = alpha_e + alpha_b + alpha_h
-    alpha_e_norm = alpha_e #/ total_alpha
-    alpha_b_norm = alpha_b #/ total_alpha
-    alpha_h_norm = alpha_h #/ total_alpha
+    total_alpha = alpha_e + alpha_b + alpha_h
+    alpha_e_norm = alpha_e / total_alpha
+    alpha_b_norm = alpha_b / total_alpha
+    alpha_h_norm = alpha_h / total_alpha
 
     # --- e. Marginal utilities ---
     marg_util_c_t = marg_util_c(c, par)

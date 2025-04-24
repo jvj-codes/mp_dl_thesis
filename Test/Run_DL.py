@@ -28,26 +28,9 @@ model_DL = {}
 
 # DeepSimulate
 K_time = 2 #20.0
-model_DL['DeepSimulate'] = WealthBehaviorModelClass(algoname='DeepSimulate', par={'j': 0.75, 'bequest': 0.25,'Nstates_fixed': 1}, device=device,train={'K_time': K_time})
+model_DL['DeepSimulate'] = WealthBehaviorModelClass(algoname='DeepSimulate',par = {'beta': 0.99}, device=device,train={'K_time': K_time})
 model_DL['DeepSimulate'].solve(do_print=True)
 
-rewards = model_DL['DeepSimulate'].info['Rs']
-plt.figure(figsize=(8, 4))
-plt.plot(rewards, marker='o')
-plt.title("Lifetime Reward Over Iterations")
-plt.xlabel("Iteration")
-plt.ylabel("Reward")
-plt.grid(True, linestyle="--", alpha=0.4)
-plt.show()
-
-
-model_DL['DeepSimulate'].compute_euler_errors()
-
-# 3. Inspect results
-euler_errors = model_DL['DeepSimulate'].sim.euler_error.cpu().numpy()
-print(euler_errors.shape)
-print(np.sum(euler_errors > 0))
-euler_errors = model_DL['DeepSimulate'].sim.euler_error.cpu().numpy().flatten()
 # # DeepVPD
 #K_time = 1.0
 #model_DL['DeepVPD'] = WealthBehaviorModelClass(algoname='DeepVPD', device=device,train={'K_time': K_time})
@@ -57,12 +40,13 @@ euler_errors = model_DL['DeepSimulate'].sim.euler_error.cpu().numpy().flatten()
 figs, axes = plt.subplots(2, 3, figsize=(16, 9))
 
 for model_key, label in model_DL.items():
-    total_asset = np.mean(model_DL[model_key].sim.actions[:, :, 2].cpu().numpy()) + np.mean(model_DL[model_key].sim.actions[:, :, 3].cpu().numpy()) +np.mean(model_DL[model_key].sim.actions[:, :, 4].cpu().numpy())
+    total_asset = np.mean(model_DL[model_key].sim.actions[:, :, 2].cpu().numpy()) + np.mean(model_DL[model_key].sim.actions[:, :, 3].cpu().numpy()) +np.mean(model_DL[model_key].sim.actions[:, :, 4].cpu().numpy())+np.mean(model_DL[model_key].sim.actions[:, :, 5].cpu().numpy())
     axes[0,0].plot(np.mean(model_DL[model_key].sim.actions[:, :, 0].cpu().numpy(), axis=1),label=model_key, lw = 2) # labor share
     axes[0,1].plot(np.mean(model_DL[model_key].sim.actions[:, :, 1].cpu().numpy(), axis=1), lw = 2) # debt share
     axes[1,0].plot(np.mean(model_DL[model_key].sim.actions[:, :, 2].cpu().numpy() / total_asset, axis=1), lw = 2) # equity share
     axes[1,1].plot(np.mean(model_DL[model_key].sim.actions[:, :, 3].cpu().numpy()/ total_asset, axis=1), lw = 2) # bond share
     axes[1,2].plot(np.mean(model_DL[model_key].sim.actions[:, :, 4].cpu().numpy()/ total_asset, axis=1), lw = 2) # house share
+    axes[1,2].plot(np.mean(model_DL[model_key].sim.actions[:, :, 5].cpu().numpy()/ total_asset, axis=1), lw = 2) # house share
 
 figs.suptitle("Actions patient beta = 0.99")
 axes[0,0].legend()
