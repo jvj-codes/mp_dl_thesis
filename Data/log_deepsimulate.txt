@@ -1,0 +1,473 @@
+
+
+beta = 0.99
+k =     0 of inf: sim.R = -3101411.00000000 [best: -3101411.00000000] [1.4 secs] [value_epochs =   0] [policy_epochs =   1] [  0.02 mins]
+k =    50 of inf: sim.R =  -9.29873180 [best:  -9.29873180] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [  0.30 mins]
+k =   100 of inf: sim.R =  -9.20093632 [best:  -9.20093632] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [  0.57 mins]
+k =   150 of inf: sim.R =  -9.12176514 [best:  -9.12176514] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [  0.84 mins]
+k =   200 of inf: sim.R =  -9.03030300 [best:  -9.03030300] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [  1.11 mins]
+k =   250 of inf: sim.R =  -8.98386955 [best:  -8.98386955] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [  1.39 mins]
+k =   300 of inf: sim.R =  -8.93364906 [best:  -8.93364906] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [  1.66 mins]
+k =   350 of inf: sim.R =  -8.90448856 [best:  -8.90448856] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [  1.93 mins]
+k =   400 of inf: sim.R =  -8.88230610 [best:  -8.88230610] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [  2.20 mins]
+k =   450 of inf: sim.R =  -8.86625767 [best:  -8.86625767] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [  2.47 mins]
+k =   500 of inf: sim.R =  -8.84211445 [best:  -8.84211445] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [  2.74 mins]
+k =   550 of inf: sim.R =  -8.81548405 [best:  -8.81548405] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [  3.01 mins]
+k =   600 of inf: sim.R =  -8.79571819 [best:  -8.79571819] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [  3.28 mins]
+k =   650 of inf: sim.R = -10.27279186 [best:  -8.79571819] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [  3.54 mins] no improvements in 0.3 mins
+k =   700 of inf: sim.R =  -8.55094337 [best:  -8.55094337] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [  3.81 mins]
+k =   750 of inf: sim.R =  -8.16502380 [best:  -8.16502380] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [  4.08 mins]
+k =   800 of inf: sim.R =  -6.68802166 [best:  -6.68802166] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [  4.35 mins]
+k =   850 of inf: sim.R =  -5.80391884 [best:  -5.80391884] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [  4.62 mins]
+k =   900 of inf: sim.R =  -5.79733229 [best:  -5.79733229] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [  4.89 mins]
+k =   950 of inf: sim.R =  -6.18831873 [best:  -5.79733229] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [  5.15 mins] no improvements in 0.3 mins
+k =  1000 of inf: sim.R =  -5.71990728 [best:  -5.71990728] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [  5.42 mins]
+k =  1050 of inf: sim.R =  -6.37176466 [best:  -5.71990728] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [  5.68 mins] no improvements in 0.3 mins
+k =  1100 of inf: sim.R =  -5.72388124 [best:  -5.71990728] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [  5.93 mins] no improvements in 0.5 mins
+k =  1150 of inf: sim.R =  -5.76344538 [best:  -5.71990728] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [  6.19 mins] no improvements in 0.8 mins
+k =  1200 of inf: sim.R =  -5.71559858 [best:  -5.71559858] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [  6.46 mins]
+k =  1250 of inf: sim.R =  -5.66461611 [best:  -5.66461611] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [  6.72 mins]
+k =  1300 of inf: sim.R =  -5.68963528 [best:  -5.66461611] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [  6.98 mins] no improvements in 0.3 mins
+k =  1350 of inf: sim.R =  -5.68673706 [best:  -5.66461611] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [  7.24 mins] no improvements in 0.5 mins
+k =  1400 of inf: sim.R =  -5.69871235 [best:  -5.66461611] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [  7.49 mins] no improvements in 0.8 mins
+k =  1450 of inf: sim.R =  -5.67387152 [best:  -5.66461611] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [  7.74 mins] no improvements in 1.0 mins
+k =  1500 of inf: sim.R =  -5.76475096 [best:  -5.66461611] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [  8.00 mins] no improvements in 1.3 mins
+k =  1550 of inf: sim.R =  -5.67178869 [best:  -5.66461611] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [  8.26 mins] no improvements in 1.5 mins
+k =  1600 of inf: sim.R =  -6.02433109 [best:  -5.66461611] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [  8.51 mins] no improvements in 1.8 mins
+k =  1650 of inf: sim.R =  -5.63192320 [best:  -5.63192320] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [  8.78 mins]
+k =  1700 of inf: sim.R =  -5.72484541 [best:  -5.63192320] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [  9.03 mins] no improvements in 0.3 mins
+k =  1750 of inf: sim.R =  -5.63621759 [best:  -5.63192320] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [  9.28 mins] no improvements in 0.5 mins
+k =  1800 of inf: sim.R =  -5.64012718 [best:  -5.63192320] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [  9.54 mins] no improvements in 0.8 mins
+k =  1850 of inf: sim.R =  -5.60088444 [best:  -5.60088444] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [  9.81 mins]
+k =  1900 of inf: sim.R =  -5.60047626 [best:  -5.60047626] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [ 10.07 mins]
+k =  1950 of inf: sim.R =  -5.60293245 [best:  -5.60047626] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 10.33 mins] no improvements in 0.3 mins
+k =  2000 of inf: sim.R =  -5.59739685 [best:  -5.59739685] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [ 10.60 mins]
+k =  2050 of inf: sim.R =  -5.59668827 [best:  -5.59668827] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [ 10.87 mins]
+k =  2100 of inf: sim.R =  -5.59206867 [best:  -5.59206867] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [ 11.13 mins]
+k =  2150 of inf: sim.R =  -5.66524029 [best:  -5.59206867] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 11.39 mins] no improvements in 0.3 mins
+k =  2200 of inf: sim.R =  -5.60069370 [best:  -5.59206867] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 11.65 mins] no improvements in 0.5 mins
+k =  2250 of inf: sim.R =  -5.58736038 [best:  -5.58736038] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [ 11.92 mins]
+k =  2300 of inf: sim.R =  -5.61775446 [best:  -5.58736038] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 12.17 mins] no improvements in 0.3 mins
+k =  2350 of inf: sim.R =  -5.58092737 [best:  -5.58092737] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [ 12.44 mins]
+k =  2400 of inf: sim.R =  -5.59935665 [best:  -5.58092737] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 12.69 mins] no improvements in 0.3 mins
+k =  2450 of inf: sim.R =  -5.60367393 [best:  -5.58092737] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 12.95 mins] no improvements in 0.5 mins
+k =  2500 of inf: sim.R =  -5.60321140 [best:  -5.58092737] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 13.20 mins] no improvements in 0.8 mins
+k =  2550 of inf: sim.R =  -5.57829046 [best:  -5.57829046] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [ 13.47 mins]
+k =  2600 of inf: sim.R =  -5.59645319 [best:  -5.57829046] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 13.73 mins] no improvements in 0.3 mins
+k =  2650 of inf: sim.R =  -5.56243324 [best:  -5.56243324] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [ 13.99 mins]
+k =  2700 of inf: sim.R =  -5.56666756 [best:  -5.56243324] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 14.25 mins] no improvements in 0.3 mins
+k =  2750 of inf: sim.R =  -5.57780409 [best:  -5.56243324] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 14.50 mins] no improvements in 0.5 mins
+k =  2800 of inf: sim.R =  -5.56206036 [best:  -5.56206036] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [ 14.77 mins]
+k =  2850 of inf: sim.R =  -5.60090542 [best:  -5.56206036] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 15.03 mins] no improvements in 0.3 mins
+k =  2900 of inf: sim.R =  -5.60678101 [best:  -5.56206036] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 15.29 mins] no improvements in 0.5 mins
+k =  2950 of inf: sim.R =  -5.59362841 [best:  -5.56206036] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 15.54 mins] no improvements in 0.8 mins
+k =  3000 of inf: sim.R =  -5.55962133 [best:  -5.55962133] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [ 15.81 mins]
+k =  3050 of inf: sim.R =  -5.68107796 [best:  -5.55962133] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 16.07 mins] no improvements in 0.3 mins
+k =  3100 of inf: sim.R =  -5.66761875 [best:  -5.55962133] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 16.32 mins] no improvements in 0.5 mins
+k =  3150 of inf: sim.R =  -5.55600691 [best:  -5.55600691] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [ 16.59 mins]
+k =  3200 of inf: sim.R =  -5.55438852 [best:  -5.55438852] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [ 16.86 mins]
+k =  3250 of inf: sim.R =  -5.55658340 [best:  -5.55438852] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 17.11 mins] no improvements in 0.3 mins
+k =  3300 of inf: sim.R =  -5.56637287 [best:  -5.55438852] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 17.37 mins] no improvements in 0.5 mins
+k =  3350 of inf: sim.R =  -5.56200838 [best:  -5.55438852] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 17.62 mins] no improvements in 0.8 mins
+k =  3400 of inf: sim.R =  -5.55817604 [best:  -5.55438852] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 17.88 mins] no improvements in 1.0 mins
+k =  3450 of inf: sim.R =  -5.57362938 [best:  -5.55438852] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 18.14 mins] no improvements in 1.3 mins
+k =  3500 of inf: sim.R =  -5.73998547 [best:  -5.55438852] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 18.39 mins] no improvements in 1.6 mins
+k =  3550 of inf: sim.R =  -5.63570118 [best:  -5.55438852] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 18.65 mins] no improvements in 1.8 mins
+k =  3600 of inf: sim.R =  -5.59612417 [best:  -5.55438852] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 18.90 mins] no improvements in 2.1 mins
+k =  3650 of inf: sim.R =  -5.56891346 [best:  -5.55438852] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 19.16 mins] no improvements in 2.3 mins
+k =  3700 of inf: sim.R =  -5.55976200 [best:  -5.55438852] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 19.41 mins] no improvements in 2.6 mins
+k =  3750 of inf: sim.R =  -5.57690334 [best:  -5.55438852] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 19.67 mins] no improvements in 2.8 mins
+k =  3800 of inf: sim.R =  -5.56135130 [best:  -5.55438852] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 19.93 mins] no improvements in 3.1 mins
+k =  3850 of inf: sim.R =  -5.55361557 [best:  -5.55361557] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [ 20.20 mins]
+k =  3900 of inf: sim.R =  -5.55898285 [best:  -5.55361557] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 20.45 mins] no improvements in 0.3 mins
+k =  3950 of inf: sim.R =  -5.60469913 [best:  -5.55361557] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 20.71 mins] no improvements in 0.5 mins
+k =  4000 of inf: sim.R =  -5.65107775 [best:  -5.55361557] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 20.97 mins] no improvements in 0.8 mins
+k =  4050 of inf: sim.R =  -5.60711861 [best:  -5.55361557] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 21.23 mins] no improvements in 1.0 mins
+k =  4100 of inf: sim.R =  -5.58478737 [best:  -5.55361557] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 21.49 mins] no improvements in 1.3 mins
+k =  4150 of inf: sim.R =  -5.56072140 [best:  -5.55361557] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 21.74 mins] no improvements in 1.6 mins
+k =  4200 of inf: sim.R =  -5.54780197 [best:  -5.54780197] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [ 22.01 mins]
+k =  4250 of inf: sim.R =  -5.59010601 [best:  -5.54780197] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 22.27 mins] no improvements in 0.3 mins
+k =  4300 of inf: sim.R =  -5.54240322 [best:  -5.54240322] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [ 22.54 mins]
+k =  4350 of inf: sim.R =  -5.60362005 [best:  -5.54240322] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 22.79 mins] no improvements in 0.3 mins
+k =  4400 of inf: sim.R =  -5.54535675 [best:  -5.54240322] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 23.05 mins] no improvements in 0.5 mins
+k =  4450 of inf: sim.R =  -5.56715012 [best:  -5.54240322] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 23.31 mins] no improvements in 0.8 mins
+k =  4500 of inf: sim.R =  -5.53857136 [best:  -5.53857136] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [ 23.58 mins]
+k =  4550 of inf: sim.R =  -5.59310722 [best:  -5.53857136] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 23.84 mins] no improvements in 0.3 mins
+k =  4600 of inf: sim.R =  -5.61863041 [best:  -5.53857136] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 24.09 mins] no improvements in 0.5 mins
+k =  4650 of inf: sim.R =  -5.54247808 [best:  -5.53857136] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 24.35 mins] no improvements in 0.8 mins
+k =  4700 of inf: sim.R =  -5.55915880 [best:  -5.53857136] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 24.61 mins] no improvements in 1.0 mins
+k =  4750 of inf: sim.R =  -5.53848410 [best:  -5.53848410] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [ 24.88 mins]
+k =  4800 of inf: sim.R =  -5.55824280 [best:  -5.53848410] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 25.14 mins] no improvements in 0.3 mins
+k =  4850 of inf: sim.R =  -5.61597395 [best:  -5.53848410] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 25.40 mins] no improvements in 0.5 mins
+k =  4900 of inf: sim.R =  -5.57442760 [best:  -5.53848410] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 25.65 mins] no improvements in 0.8 mins
+k =  4950 of inf: sim.R =  -5.60794544 [best:  -5.53848410] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 25.91 mins] no improvements in 1.0 mins
+k =  5000 of inf: sim.R =  -5.55429792 [best:  -5.53848410] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 26.17 mins] no improvements in 1.3 mins
+k =  5050 of inf: sim.R =  -5.54162312 [best:  -5.53848410] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 26.42 mins] no improvements in 1.6 mins
+k =  5100 of inf: sim.R =  -5.54264259 [best:  -5.53848410] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 26.68 mins] no improvements in 1.8 mins
+k =  5150 of inf: sim.R =  -5.55410004 [best:  -5.53848410] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 26.94 mins] no improvements in 2.1 mins
+k =  5200 of inf: sim.R =  -5.54206371 [best:  -5.53848410] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 27.20 mins] no improvements in 2.3 mins
+k =  5250 of inf: sim.R =  -5.55328226 [best:  -5.53848410] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 27.45 mins] no improvements in 2.6 mins
+k =  5300 of inf: sim.R =  -5.56860638 [best:  -5.53848410] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 27.71 mins] no improvements in 2.8 mins
+k =  5350 of inf: sim.R =  -5.55208254 [best:  -5.53848410] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 27.96 mins] no improvements in 3.1 mins
+k =  5400 of inf: sim.R =  -5.55966902 [best:  -5.53848410] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 28.22 mins] no improvements in 3.3 mins
+k =  5450 of inf: sim.R =  -5.53764725 [best:  -5.53764725] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [ 28.49 mins]
+k =  5500 of inf: sim.R =  -5.57737923 [best:  -5.53764725] [0.6 secs] [value_epochs =   0] [policy_epochs =   1] [ 28.74 mins] no improvements in 0.3 mins
+k =  5550 of inf: sim.R =  -5.56856203 [best:  -5.53764725] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 29.00 mins] no improvements in 0.5 mins
+k =  5600 of inf: sim.R =  -5.59452486 [best:  -5.53764725] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 29.26 mins] no improvements in 0.8 mins
+k =  5650 of inf: sim.R =  -5.54797029 [best:  -5.53764725] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 29.51 mins] no improvements in 1.0 mins
+k =  5700 of inf: sim.R =  -5.55531979 [best:  -5.53764725] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 29.77 mins] no improvements in 1.3 mins
+k =  5750 of inf: sim.R =  -5.54379272 [best:  -5.53764725] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 30.03 mins] no improvements in 1.6 mins
+k =  5800 of inf: sim.R =  -5.54779482 [best:  -5.53764725] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 30.28 mins] no improvements in 1.8 mins
+k =  5850 of inf: sim.R =  -5.55093956 [best:  -5.53764725] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 30.54 mins] no improvements in 2.1 mins
+k =  5900 of inf: sim.R =  -5.53062153 [best:  -5.53062153] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [ 30.81 mins]
+k =  5950 of inf: sim.R =  -5.54039574 [best:  -5.53062153] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 31.07 mins] no improvements in 0.3 mins
+k =  6000 of inf: sim.R =  -5.57722473 [best:  -5.53062153] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 31.32 mins] no improvements in 0.5 mins
+k =  6050 of inf: sim.R =  -5.76446056 [best:  -5.53062153] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 31.58 mins] no improvements in 0.8 mins
+k =  6100 of inf: sim.R =  -5.54611874 [best:  -5.53062153] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 31.84 mins] no improvements in 1.0 mins
+k =  6150 of inf: sim.R =  -5.53547812 [best:  -5.53062153] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 32.10 mins] no improvements in 1.3 mins
+k =  6200 of inf: sim.R =  -5.53582811 [best:  -5.53062153] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 32.36 mins] no improvements in 1.6 mins
+k =  6250 of inf: sim.R =  -5.53317976 [best:  -5.53062153] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 32.61 mins] no improvements in 1.8 mins
+k =  6300 of inf: sim.R =  -5.53739166 [best:  -5.53062153] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 32.87 mins] no improvements in 2.1 mins
+k =  6350 of inf: sim.R =  -5.54192543 [best:  -5.53062153] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 33.12 mins] no improvements in 2.3 mins
+k =  6400 of inf: sim.R =  -5.55480957 [best:  -5.53062153] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 33.38 mins] no improvements in 2.6 mins
+k =  6450 of inf: sim.R =  -5.53625727 [best:  -5.53062153] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 33.64 mins] no improvements in 2.8 mins
+k =  6500 of inf: sim.R =  -5.59730482 [best:  -5.53062153] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 33.90 mins] no improvements in 3.1 mins
+k =  6550 of inf: sim.R =  -5.53762102 [best:  -5.53062153] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 34.15 mins] no improvements in 3.4 mins
+k =  6600 of inf: sim.R =  -5.54526663 [best:  -5.53062153] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 34.41 mins] no improvements in 3.6 mins
+k =  6650 of inf: sim.R =  -5.53803778 [best:  -5.53062153] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 34.67 mins] no improvements in 3.9 mins
+k =  6700 of inf: sim.R =  -5.54141045 [best:  -5.53062153] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 34.92 mins] no improvements in 4.1 mins
+k =  6750 of inf: sim.R =  -5.59601784 [best:  -5.53062153] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 35.18 mins] no improvements in 4.4 mins
+k =  6800 of inf: sim.R =  -5.53691053 [best:  -5.53062153] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 35.43 mins] no improvements in 4.6 mins
+k =  6850 of inf: sim.R =  -5.55187654 [best:  -5.53062153] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 35.69 mins] no improvements in 4.9 mins
+k =  6900 of inf: sim.R =  -5.53740740 [best:  -5.53062153] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 35.95 mins] no improvements in 5.2 mins
+k =  6950 of inf: sim.R =  -5.53263760 [best:  -5.53062153] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 36.20 mins] no improvements in 5.4 mins
+k =  7000 of inf: sim.R =  -5.53538179 [best:  -5.53062153] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 36.46 mins] no improvements in 5.7 mins
+k =  7050 of inf: sim.R =  -5.55120802 [best:  -5.53062153] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 36.71 mins] no improvements in 5.9 mins
+k =  7100 of inf: sim.R =  -5.54117537 [best:  -5.53062153] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 36.97 mins] no improvements in 6.2 mins
+k =  7150 of inf: sim.R =  -5.54533863 [best:  -5.53062153] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 37.23 mins] no improvements in 6.4 mins
+k =  7200 of inf: sim.R =  -5.53437614 [best:  -5.53062153] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 37.48 mins] no improvements in 6.7 mins
+k =  7250 of inf: sim.R =  -5.57016563 [best:  -5.53062153] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 37.74 mins] no improvements in 6.9 mins
+k =  7300 of inf: sim.R =  -5.53412485 [best:  -5.53062153] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 37.99 mins] no improvements in 7.2 mins
+k =  7350 of inf: sim.R =  -5.54041767 [best:  -5.53062153] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 38.25 mins] no improvements in 7.5 mins
+k =  7400 of inf: sim.R =  -5.52840996 [best:  -5.52840996] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [ 38.52 mins]
+k =  7450 of inf: sim.R =  -5.61099911 [best:  -5.52840996] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 38.78 mins] no improvements in 0.3 mins
+k =  7500 of inf: sim.R =  -5.53259802 [best:  -5.52840996] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 39.04 mins] no improvements in 0.5 mins
+k =  7550 of inf: sim.R =  -5.52941370 [best:  -5.52840996] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 39.29 mins] no improvements in 0.8 mins
+k =  7600 of inf: sim.R =  -5.60853243 [best:  -5.52840996] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 39.55 mins] no improvements in 1.0 mins
+k =  7650 of inf: sim.R =  -5.56265211 [best:  -5.52840996] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 39.81 mins] no improvements in 1.3 mins
+k =  7700 of inf: sim.R =  -5.53485203 [best:  -5.52840996] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 40.07 mins] no improvements in 1.6 mins
+k =  7750 of inf: sim.R =  -5.53555870 [best:  -5.52840996] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 40.33 mins] no improvements in 1.8 mins
+k =  7800 of inf: sim.R =  -5.53144073 [best:  -5.52840996] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 40.58 mins] no improvements in 2.1 mins
+k =  7850 of inf: sim.R =  -5.53644276 [best:  -5.52840996] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 40.84 mins] no improvements in 2.3 mins
+k =  7900 of inf: sim.R =  -5.57850742 [best:  -5.52840996] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 41.10 mins] no improvements in 2.6 mins
+k =  7950 of inf: sim.R =  -5.53751898 [best:  -5.52840996] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 41.35 mins] no improvements in 2.8 mins
+k =  8000 of inf: sim.R =  -5.54019547 [best:  -5.52840996] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 41.61 mins] no improvements in 3.1 mins
+k =  8050 of inf: sim.R =  -5.54150820 [best:  -5.52840996] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 41.87 mins] no improvements in 3.4 mins
+k =  8100 of inf: sim.R =  -5.53151321 [best:  -5.52840996] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 42.13 mins] no improvements in 3.6 mins
+k =  8150 of inf: sim.R =  -5.55837107 [best:  -5.52840996] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 42.39 mins] no improvements in 3.9 mins
+k =  8200 of inf: sim.R =  -5.54237938 [best:  -5.52840996] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 42.64 mins] no improvements in 4.1 mins
+k =  8250 of inf: sim.R =  -5.53727770 [best:  -5.52840996] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 42.90 mins] no improvements in 4.4 mins
+k =  8300 of inf: sim.R =  -5.54006577 [best:  -5.52840996] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 43.16 mins] no improvements in 4.7 mins
+k =  8350 of inf: sim.R =  -5.53146315 [best:  -5.52840996] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 43.43 mins] no improvements in 4.9 mins
+k =  8400 of inf: sim.R =  -5.58299398 [best:  -5.52840996] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 43.68 mins] no improvements in 5.2 mins
+k =  8450 of inf: sim.R =  -5.54962730 [best:  -5.52840996] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 43.94 mins] no improvements in 5.4 mins
+k =  8500 of inf: sim.R =  -5.55152607 [best:  -5.52840996] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 44.20 mins] no improvements in 5.7 mins
+k =  8550 of inf: sim.R =  -5.56476974 [best:  -5.52840996] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 44.45 mins] no improvements in 5.9 mins
+k =  8600 of inf: sim.R =  -5.55113983 [best:  -5.52840996] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 44.71 mins] no improvements in 6.2 mins
+k =  8650 of inf: sim.R =  -5.54498005 [best:  -5.52840996] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 44.97 mins] no improvements in 6.5 mins
+k =  8700 of inf: sim.R =  -5.54842472 [best:  -5.52840996] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 45.23 mins] no improvements in 6.7 mins
+k =  8750 of inf: sim.R =  -5.55115747 [best:  -5.52840996] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 45.49 mins] no improvements in 7.0 mins
+k =  8800 of inf: sim.R =  -5.60552120 [best:  -5.52840996] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 45.75 mins] no improvements in 7.2 mins
+k =  8850 of inf: sim.R =  -5.54264736 [best:  -5.52840996] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 46.01 mins] no improvements in 7.5 mins
+k =  8900 of inf: sim.R =  -5.61825848 [best:  -5.52840996] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 46.28 mins] no improvements in 7.8 mins
+k =  8950 of inf: sim.R =  -5.58688259 [best:  -5.52840996] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 46.54 mins] no improvements in 8.0 mins
+k =  9000 of inf: sim.R =  -5.56550312 [best:  -5.52840996] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 46.79 mins] no improvements in 8.3 mins
+k =  9050 of inf: sim.R =  -5.52746868 [best:  -5.52746868] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [ 47.07 mins]
+k =  9100 of inf: sim.R =  -5.55089712 [best:  -5.52746868] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 47.32 mins] no improvements in 0.3 mins
+k =  9150 of inf: sim.R =  -5.54922771 [best:  -5.52746868] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 47.58 mins] no improvements in 0.5 mins
+k =  9200 of inf: sim.R =  -5.53999710 [best:  -5.52746868] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 47.84 mins] no improvements in 0.8 mins
+k =  9250 of inf: sim.R =  -5.52618122 [best:  -5.52618122] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [ 48.10 mins]
+k =  9300 of inf: sim.R =  -5.54123735 [best:  -5.52618122] [0.7 secs] [value_epochs =   0] [policy_epochs =   1] [ 48.36 mins] no improvements in 0.3 mins
+k =  9350 of inf: sim.R =  -5.54958820 [best:  -5.52618122] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 48.62 mins] no improvements in 0.5 mins
+k =  9400 of inf: sim.R =  -5.52881241 [best:  -5.52618122] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 48.88 mins] no improvements in 0.8 mins
+k =  9450 of inf: sim.R =  -5.55349112 [best:  -5.52618122] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 49.14 mins] no improvements in 1.1 mins
+k =  9500 of inf: sim.R =  -5.60474777 [best:  -5.52618122] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 49.40 mins] no improvements in 1.3 mins
+k =  9550 of inf: sim.R =  -5.53444481 [best:  -5.52618122] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 49.66 mins] no improvements in 1.6 mins
+k =  9600 of inf: sim.R =  -5.56012344 [best:  -5.52618122] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 49.93 mins] no improvements in 1.8 mins
+k =  9650 of inf: sim.R =  -5.55045366 [best:  -5.52618122] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 50.19 mins] no improvements in 2.1 mins
+k =  9700 of inf: sim.R =  -5.53813696 [best:  -5.52618122] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 50.45 mins] no improvements in 2.4 mins
+k =  9750 of inf: sim.R =  -5.53615046 [best:  -5.52618122] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 50.71 mins] no improvements in 2.6 mins
+k =  9800 of inf: sim.R =  -5.54119778 [best:  -5.52618122] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 50.97 mins] no improvements in 2.9 mins
+k =  9850 of inf: sim.R =  -5.55253839 [best:  -5.52618122] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 51.23 mins] no improvements in 3.1 mins
+k =  9900 of inf: sim.R =  -5.53782177 [best:  -5.52618122] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 51.49 mins] no improvements in 3.4 mins
+k =  9950 of inf: sim.R =  -5.62154913 [best:  -5.52618122] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 51.75 mins] no improvements in 3.7 mins
+k = 10000 of inf: sim.R =  -5.54926062 [best:  -5.52618122] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 52.01 mins] no improvements in 3.9 mins
+k = 10050 of inf: sim.R =  -5.56537914 [best:  -5.52618122] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 52.27 mins] no improvements in 4.2 mins
+k = 10100 of inf: sim.R =  -5.56741667 [best:  -5.52618122] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 52.53 mins] no improvements in 4.4 mins
+k = 10150 of inf: sim.R =  -5.54608011 [best:  -5.52618122] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 52.79 mins] no improvements in 4.7 mins
+k = 10200 of inf: sim.R = -17.69653511 [best:  -5.52618122] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 53.05 mins] no improvements in 5.0 mins
+k = 10250 of inf: sim.R =  -5.56586123 [best:  -5.52618122] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 53.30 mins] no improvements in 5.2 mins
+k = 10300 of inf: sim.R =  -5.57631874 [best:  -5.52618122] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 53.56 mins] no improvements in 5.5 mins
+k = 10350 of inf: sim.R =  -5.53645325 [best:  -5.52618122] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 53.82 mins] no improvements in 5.7 mins
+k = 10400 of inf: sim.R =  -5.53177595 [best:  -5.52618122] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 54.08 mins] no improvements in 6.0 mins
+k = 10450 of inf: sim.R =  -5.56324053 [best:  -5.52618122] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 54.33 mins] no improvements in 6.2 mins
+k = 10500 of inf: sim.R =  -5.53322697 [best:  -5.52618122] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 54.59 mins] no improvements in 6.5 mins
+k = 10550 of inf: sim.R =  -5.52771473 [best:  -5.52618122] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 54.85 mins] no improvements in 6.8 mins
+k = 10600 of inf: sim.R = -21.75502014 [best:  -5.52618122] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 55.11 mins] no improvements in 7.0 mins
+k = 10650 of inf: sim.R =  -5.58679295 [best:  -5.52618122] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 55.37 mins] no improvements in 7.3 mins
+k = 10700 of inf: sim.R =  -5.55617523 [best:  -5.52618122] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 55.63 mins] no improvements in 7.5 mins
+k = 10750 of inf: sim.R =  -5.53693390 [best:  -5.52618122] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 55.89 mins] no improvements in 7.8 mins
+k = 10800 of inf: sim.R =  -5.54596233 [best:  -5.52618122] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 56.15 mins] no improvements in 8.1 mins
+k = 10850 of inf: sim.R =  -5.55287409 [best:  -5.52618122] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 56.41 mins] no improvements in 8.3 mins
+k = 10900 of inf: sim.R =  -5.53564167 [best:  -5.52618122] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 56.66 mins] no improvements in 8.6 mins
+k = 10950 of inf: sim.R =  -5.54702663 [best:  -5.52618122] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 56.92 mins] no improvements in 8.8 mins
+k = 11000 of inf: sim.R =  -5.52836657 [best:  -5.52618122] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 57.18 mins] no improvements in 9.1 mins
+k = 11050 of inf: sim.R =  -5.53795671 [best:  -5.52618122] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 57.44 mins] no improvements in 9.3 mins
+k = 11100 of inf: sim.R =  -5.54938555 [best:  -5.52618122] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 57.69 mins] no improvements in 9.6 mins
+k = 11150 of inf: sim.R = -42.80855560 [best:  -5.52618122] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 57.95 mins] no improvements in 9.9 mins
+k = 11200 of inf: sim.R =  -5.59016132 [best:  -5.52618122] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 58.21 mins] no improvements in 10.1 mins
+k = 11250 of inf: sim.R =  -5.53941965 [best:  -5.52618122] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 58.47 mins] no improvements in 10.4 mins
+k = 11300 of inf: sim.R =  -5.57143974 [best:  -5.52618122] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 58.73 mins] no improvements in 10.6 mins
+k = 11350 of inf: sim.R =  -5.55162954 [best:  -5.52618122] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 58.99 mins] no improvements in 10.9 mins
+k = 11400 of inf: sim.R =  -5.55302382 [best:  -5.52618122] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 59.25 mins] no improvements in 11.2 mins
+k = 11450 of inf: sim.R =  -5.53762293 [best:  -5.52618122] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 59.51 mins] no improvements in 11.4 mins
+k = 11500 of inf: sim.R = -96733.96875000 [best:  -5.52618122] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 59.76 mins] no improvements in 11.7 mins
+Terminating after 11548 iter, max time 60 mins reached
+R = -5.5262, time = 60.0 mins, iter = 11548, policy epochs = 1.00, value epochs = 0.00
+
+
+beta = 0.95
+started solving: 2025-04-24 10:20:07
+k =     0 of inf: sim.R = -345135.06250000 [best: -345135.06250000] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [  0.02 mins]
+k =    50 of inf: sim.R =  -3.60040045 [best:  -3.60040045] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [  0.30 mins]
+k =   100 of inf: sim.R =  -3.46658587 [best:  -3.46658587] [1.3 secs] [value_epochs =   0] [policy_epochs =   1] [  0.57 mins]
+k =   150 of inf: sim.R =  -3.39559174 [best:  -3.39559174] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [  0.84 mins]
+k =   200 of inf: sim.R =  -3.35625410 [best:  -3.35625410] [1.6 secs] [value_epochs =   0] [policy_epochs =   1] [  1.11 mins]
+k =   250 of inf: sim.R =  -3.33010769 [best:  -3.33010769] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [  1.38 mins]
+k =   300 of inf: sim.R =  -3.29140425 [best:  -3.29140425] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [  1.66 mins]
+k =   350 of inf: sim.R =  -3.30615067 [best:  -3.29140425] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [  1.91 mins] no improvements in 0.3 mins
+k =   400 of inf: sim.R =  -3.24483013 [best:  -3.24483013] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [  2.19 mins]
+k =   450 of inf: sim.R =  -3.28799796 [best:  -3.24483013] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [  2.44 mins] no improvements in 0.3 mins
+k =   500 of inf: sim.R =  -3.20783114 [best:  -3.20783114] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [  2.71 mins]
+k =   550 of inf: sim.R = -68.10906982 [best:  -3.20783114] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [  2.98 mins] no improvements in 0.3 mins
+k =   600 of inf: sim.R =  -3.18238282 [best:  -3.18238282] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [  3.24 mins]
+k =   650 of inf: sim.R =  -3.17361832 [best:  -3.17361832] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [  3.51 mins]
+k =   700 of inf: sim.R =  -3.15600610 [best:  -3.15600610] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [  3.79 mins]
+k =   750 of inf: sim.R = -28.63813210 [best:  -3.15600610] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [  4.04 mins] no improvements in 0.3 mins
+k =   800 of inf: sim.R =  -3.05299020 [best:  -3.05299020] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [  4.31 mins]
+k =   850 of inf: sim.R =  -2.95775414 [best:  -2.95775414] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [  4.58 mins]
+k =   900 of inf: sim.R =  -2.91960430 [best:  -2.91960430] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [  4.86 mins]
+k =   950 of inf: sim.R =  -2.91101909 [best:  -2.91101909] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [  5.13 mins]
+k =  1000 of inf: sim.R = -16.75375748 [best:  -2.91101909] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [  5.38 mins] no improvements in 0.3 mins
+k =  1050 of inf: sim.R =  -2.83746386 [best:  -2.83746386] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [  5.66 mins]
+k =  1100 of inf: sim.R =  -2.77945113 [best:  -2.77945113] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [  5.93 mins]
+k =  1150 of inf: sim.R =  -2.76442122 [best:  -2.76442122] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [  6.19 mins]
+k =  1200 of inf: sim.R =  -2.74312305 [best:  -2.74312305] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [  6.47 mins]
+k =  1250 of inf: sim.R =  -2.73032355 [best:  -2.73032355] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [  6.74 mins]
+k =  1300 of inf: sim.R =  -2.74412584 [best:  -2.73032355] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [  6.99 mins] no improvements in 0.3 mins
+k =  1350 of inf: sim.R =  -2.71710062 [best:  -2.71710062] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [  7.27 mins]
+k =  1400 of inf: sim.R =  -2.71913815 [best:  -2.71710062] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [  7.53 mins] no improvements in 0.3 mins
+k =  1450 of inf: sim.R =  -2.69066405 [best:  -2.69066405] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [  7.80 mins]
+k =  1500 of inf: sim.R =  -2.67370629 [best:  -2.67370629] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [  8.07 mins]
+k =  1550 of inf: sim.R =  -2.66577148 [best:  -2.66577148] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [  8.34 mins]
+k =  1600 of inf: sim.R =  -2.66466665 [best:  -2.66466665] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [  8.61 mins]
+k =  1650 of inf: sim.R =  -2.66089272 [best:  -2.66089272] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [  8.88 mins]
+k =  1700 of inf: sim.R =  -2.64543200 [best:  -2.64543200] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [  9.15 mins]
+k =  1750 of inf: sim.R =  -2.64960194 [best:  -2.64543200] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [  9.42 mins] no improvements in 0.3 mins
+k =  1800 of inf: sim.R =  -2.63754368 [best:  -2.63754368] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [  9.69 mins]
+k =  1850 of inf: sim.R =  -2.62399268 [best:  -2.62399268] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [  9.95 mins]
+k =  1900 of inf: sim.R =  -2.61709809 [best:  -2.61709809] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [ 10.23 mins]
+k =  1950 of inf: sim.R =  -2.61306143 [best:  -2.61306143] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [ 10.50 mins]
+k =  2000 of inf: sim.R =  -2.63777065 [best:  -2.61306143] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 10.76 mins] no improvements in 0.3 mins
+k =  2050 of inf: sim.R =  -2.60353112 [best:  -2.60353112] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [ 11.02 mins]
+k =  2100 of inf: sim.R =  -2.60449004 [best:  -2.60353112] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 11.29 mins] no improvements in 0.3 mins
+k =  2150 of inf: sim.R =  -2.59199286 [best:  -2.59199286] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [ 11.55 mins]
+k =  2200 of inf: sim.R =  -2.58506393 [best:  -2.58506393] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [ 11.82 mins]
+k =  2250 of inf: sim.R =  -2.59976935 [best:  -2.58506393] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 12.08 mins] no improvements in 0.3 mins
+k =  2300 of inf: sim.R =  -2.58928013 [best:  -2.58506393] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 12.34 mins] no improvements in 0.5 mins
+k =  2350 of inf: sim.R =  -2.57948852 [best:  -2.57948852] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [ 12.61 mins]
+k =  2400 of inf: sim.R =  -2.59435463 [best:  -2.57948852] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 12.86 mins] no improvements in 0.3 mins
+k =  2450 of inf: sim.R =  -2.57425714 [best:  -2.57425714] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [ 13.15 mins]
+k =  2500 of inf: sim.R =  -2.74804473 [best:  -2.57425714] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 13.40 mins] no improvements in 0.3 mins
+k =  2550 of inf: sim.R =  -2.56994748 [best:  -2.56994748] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [ 13.67 mins]
+k =  2600 of inf: sim.R =  -2.57715011 [best:  -2.56994748] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 13.93 mins] no improvements in 0.3 mins
+k =  2650 of inf: sim.R =  -2.55373025 [best:  -2.55373025] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [ 14.20 mins]
+k =  2700 of inf: sim.R =  -2.55376315 [best:  -2.55373025] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 14.46 mins] no improvements in 0.3 mins
+k =  2750 of inf: sim.R =  -2.54697442 [best:  -2.54697442] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [ 14.73 mins]
+k =  2800 of inf: sim.R =  -2.54124713 [best:  -2.54124713] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [ 15.00 mins]
+k =  2850 of inf: sim.R =  -2.60852861 [best:  -2.54124713] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 15.26 mins] no improvements in 0.3 mins
+k =  2900 of inf: sim.R =  -2.54744124 [best:  -2.54124713] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 15.51 mins] no improvements in 0.5 mins
+k =  2950 of inf: sim.R =  -2.54292297 [best:  -2.54124713] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 15.77 mins] no improvements in 0.8 mins
+k =  3000 of inf: sim.R =  -2.59483981 [best:  -2.54124713] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 16.03 mins] no improvements in 1.0 mins
+k =  3050 of inf: sim.R =  -3.09519958 [best:  -2.54124713] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 16.29 mins] no improvements in 1.3 mins
+k =  3100 of inf: sim.R = -22.63579559 [best:  -2.54124713] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 16.54 mins] no improvements in 1.6 mins
+k =  3150 of inf: sim.R =  -2.54344797 [best:  -2.54124713] [0.8 secs] [value_epochs =   0] [policy_epochs =   1] [ 16.81 mins] no improvements in 1.8 mins
+k =  3200 of inf: sim.R =  -2.53842115 [best:  -2.53842115] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [ 17.08 mins]
+k =  3250 of inf: sim.R =  -2.56363797 [best:  -2.53842115] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 17.33 mins] no improvements in 0.3 mins
+k =  3300 of inf: sim.R =  -2.55611849 [best:  -2.53842115] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 17.59 mins] no improvements in 0.5 mins
+k =  3350 of inf: sim.R =  -2.52393603 [best:  -2.52393603] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [ 17.87 mins]
+k =  3400 of inf: sim.R =  -2.73966265 [best:  -2.52393603] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 18.12 mins] no improvements in 0.3 mins
+k =  3450 of inf: sim.R =  -2.50376177 [best:  -2.50376177] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [ 18.39 mins]
+k =  3500 of inf: sim.R =  -2.49688220 [best:  -2.49688220] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [ 18.66 mins]
+k =  3550 of inf: sim.R =  -2.51928496 [best:  -2.49688220] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 18.92 mins] no improvements in 0.3 mins
+k =  3600 of inf: sim.R =  -2.49443078 [best:  -2.49443078] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [ 19.19 mins]
+k =  3650 of inf: sim.R =  -2.47801352 [best:  -2.47801352] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [ 19.46 mins]
+k =  3700 of inf: sim.R =  -5.61014175 [best:  -2.47801352] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 19.71 mins] no improvements in 0.3 mins
+k =  3750 of inf: sim.R =  -2.48902988 [best:  -2.47801352] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 19.98 mins] no improvements in 0.5 mins
+k =  3800 of inf: sim.R =  -2.46780872 [best:  -2.46780872] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [ 20.24 mins]
+k =  3850 of inf: sim.R =  -2.53396392 [best:  -2.46780872] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 20.50 mins] no improvements in 0.3 mins
+k =  3900 of inf: sim.R =  -2.44835353 [best:  -2.44835353] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [ 20.77 mins]
+k =  3950 of inf: sim.R =  -2.47958851 [best:  -2.44835353] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 21.03 mins] no improvements in 0.3 mins
+k =  4000 of inf: sim.R =  -2.44575930 [best:  -2.44575930] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [ 21.30 mins]
+k =  4050 of inf: sim.R =  -2.44998908 [best:  -2.44575930] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 21.56 mins] no improvements in 0.3 mins
+k =  4100 of inf: sim.R =  -2.43498015 [best:  -2.43498015] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [ 21.83 mins]
+k =  4150 of inf: sim.R =  -2.48470831 [best:  -2.43498015] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 22.09 mins] no improvements in 0.3 mins
+k =  4200 of inf: sim.R =  -2.44026852 [best:  -2.43498015] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 22.34 mins] no improvements in 0.5 mins
+k =  4250 of inf: sim.R =  -2.47541308 [best:  -2.43498015] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 22.60 mins] no improvements in 0.8 mins
+k =  4300 of inf: sim.R =  -2.42481613 [best:  -2.42481613] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [ 22.87 mins]
+k =  4350 of inf: sim.R =  -2.44500661 [best:  -2.42481613] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 23.13 mins] no improvements in 0.3 mins
+k =  4400 of inf: sim.R =  -2.42213750 [best:  -2.42213750] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [ 23.40 mins]
+k =  4450 of inf: sim.R =  -2.41400838 [best:  -2.41400838] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [ 23.67 mins]
+k =  4500 of inf: sim.R = -100.37417603 [best:  -2.41400838] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 23.93 mins] no improvements in 0.3 mins
+k =  4550 of inf: sim.R =  -2.42777133 [best:  -2.41400838] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 24.19 mins] no improvements in 0.5 mins
+k =  4600 of inf: sim.R =  -2.43871975 [best:  -2.41400838] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 24.45 mins] no improvements in 0.8 mins
+k =  4650 of inf: sim.R =  -2.53695130 [best:  -2.41400838] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 24.71 mins] no improvements in 1.0 mins
+k =  4700 of inf: sim.R =  -2.42167759 [best:  -2.41400838] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 24.96 mins] no improvements in 1.3 mins
+k =  4750 of inf: sim.R =  -2.47860217 [best:  -2.41400838] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 25.23 mins] no improvements in 1.6 mins
+k =  4800 of inf: sim.R =  -2.43563986 [best:  -2.41400838] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 25.49 mins] no improvements in 1.8 mins
+k =  4850 of inf: sim.R =  -2.61726832 [best:  -2.41400838] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 25.74 mins] no improvements in 2.1 mins
+k =  4900 of inf: sim.R =  -2.42405558 [best:  -2.41400838] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 26.00 mins] no improvements in 2.3 mins
+k =  4950 of inf: sim.R = -13.82793617 [best:  -2.41400838] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 26.27 mins] no improvements in 2.6 mins
+k =  5000 of inf: sim.R = -13.23609257 [best:  -2.41400838] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 26.52 mins] no improvements in 2.9 mins
+k =  5050 of inf: sim.R =  -7.54782104 [best:  -2.41400838] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 26.78 mins] no improvements in 3.1 mins
+k =  5100 of inf: sim.R = -2995.39941406 [best:  -2.41400838] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 27.03 mins] no improvements in 3.4 mins
+k =  5150 of inf: sim.R =  -7.54260206 [best:  -2.41400838] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 27.30 mins] no improvements in 3.6 mins
+k =  5200 of inf: sim.R =  -2.40609121 [best:  -2.40609121] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [ 27.57 mins]
+k =  5250 of inf: sim.R = -16.79047585 [best:  -2.40609121] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 27.82 mins] no improvements in 0.3 mins
+k =  5300 of inf: sim.R =  -2.50488377 [best:  -2.40609121] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 28.08 mins] no improvements in 0.5 mins
+k =  5350 of inf: sim.R =  -2.44475842 [best:  -2.40609121] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 28.34 mins] no improvements in 0.8 mins
+k =  5400 of inf: sim.R =  -2.43708587 [best:  -2.40609121] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 28.60 mins] no improvements in 1.0 mins
+k =  5450 of inf: sim.R =  -2.50456262 [best:  -2.40609121] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 28.85 mins] no improvements in 1.3 mins
+k =  5500 of inf: sim.R =  -2.41225338 [best:  -2.40609121] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 29.10 mins] no improvements in 1.5 mins
+k =  5550 of inf: sim.R =  -2.41030312 [best:  -2.40609121] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 29.36 mins] no improvements in 1.8 mins
+k =  5600 of inf: sim.R =  -2.41854668 [best:  -2.40609121] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 29.62 mins] no improvements in 2.1 mins
+k =  5650 of inf: sim.R =  -5.34533882 [best:  -2.40609121] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 29.87 mins] no improvements in 2.3 mins
+k =  5700 of inf: sim.R =  -7.96775389 [best:  -2.40609121] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 30.12 mins] no improvements in 2.6 mins
+k =  5750 of inf: sim.R =  -2.40166593 [best:  -2.40166593] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [ 30.40 mins]
+k =  5800 of inf: sim.R =  -2.41236782 [best:  -2.40166593] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 30.65 mins] no improvements in 0.3 mins
+k =  5850 of inf: sim.R =  -2.40143442 [best:  -2.40143442] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [ 30.91 mins]
+k =  5900 of inf: sim.R =  -2.45052814 [best:  -2.40143442] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 31.17 mins] no improvements in 0.3 mins
+k =  5950 of inf: sim.R =  -2.41165400 [best:  -2.40143442] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 31.42 mins] no improvements in 0.5 mins
+k =  6000 of inf: sim.R =  -2.41033268 [best:  -2.40143442] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 31.68 mins] no improvements in 0.8 mins
+k =  6050 of inf: sim.R =  -2.41176581 [best:  -2.40143442] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 31.93 mins] no improvements in 1.0 mins
+k =  6100 of inf: sim.R =  -2.40267754 [best:  -2.40143442] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 32.18 mins] no improvements in 1.3 mins
+k =  6150 of inf: sim.R =  -2.40161157 [best:  -2.40143442] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 32.43 mins] no improvements in 1.5 mins
+k =  6200 of inf: sim.R =  -2.50683641 [best:  -2.40143442] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 32.69 mins] no improvements in 1.8 mins
+k =  6250 of inf: sim.R =  -2.41149592 [best:  -2.40143442] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 32.95 mins] no improvements in 2.0 mins
+k =  6300 of inf: sim.R =  -2.42289424 [best:  -2.40143442] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 33.20 mins] no improvements in 2.3 mins
+k =  6350 of inf: sim.R =  -2.41153622 [best:  -2.40143442] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 33.45 mins] no improvements in 2.5 mins
+k =  6400 of inf: sim.R =  -2.50406003 [best:  -2.40143442] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 33.71 mins] no improvements in 2.8 mins
+k =  6450 of inf: sim.R =  -2.43440986 [best:  -2.40143442] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 33.96 mins] no improvements in 3.1 mins
+k =  6500 of inf: sim.R =  -2.45676160 [best:  -2.40143442] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 34.21 mins] no improvements in 3.3 mins
+k =  6550 of inf: sim.R =  -2.40554786 [best:  -2.40143442] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 34.46 mins] no improvements in 3.6 mins
+k =  6600 of inf: sim.R =  -2.44129109 [best:  -2.40143442] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 34.72 mins] no improvements in 3.8 mins
+k =  6650 of inf: sim.R =  -2.40292668 [best:  -2.40143442] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 34.97 mins] no improvements in 4.1 mins
+k =  6700 of inf: sim.R =  -2.40404773 [best:  -2.40143442] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 35.23 mins] no improvements in 4.3 mins
+k =  6750 of inf: sim.R =  -2.40750217 [best:  -2.40143442] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 35.48 mins] no improvements in 4.6 mins
+k =  6800 of inf: sim.R =  -2.41894960 [best:  -2.40143442] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 35.74 mins] no improvements in 4.8 mins
+k =  6850 of inf: sim.R =  -2.40386987 [best:  -2.40143442] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 36.00 mins] no improvements in 5.1 mins
+k =  6900 of inf: sim.R =  -2.40338206 [best:  -2.40143442] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 36.26 mins] no improvements in 5.4 mins
+k =  6950 of inf: sim.R =  -2.42244482 [best:  -2.40143442] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 36.51 mins] no improvements in 5.6 mins
+k =  7000 of inf: sim.R =  -2.42391920 [best:  -2.40143442] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 36.77 mins] no improvements in 5.9 mins
+k =  7050 of inf: sim.R =  -2.44308853 [best:  -2.40143442] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 37.03 mins] no improvements in 6.1 mins
+k =  7100 of inf: sim.R =  -2.40761518 [best:  -2.40143442] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 37.29 mins] no improvements in 6.4 mins
+k =  7150 of inf: sim.R =  -2.40148664 [best:  -2.40143442] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 37.54 mins] no improvements in 6.6 mins
+k =  7200 of inf: sim.R =  -2.42535114 [best:  -2.40143442] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 37.80 mins] no improvements in 6.9 mins
+k =  7250 of inf: sim.R =  -2.46965981 [best:  -2.40143442] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 38.05 mins] no improvements in 7.2 mins
+k =  7300 of inf: sim.R =  -2.40017557 [best:  -2.40017557] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [ 38.33 mins]
+k =  7350 of inf: sim.R =  -2.39981413 [best:  -2.39981413] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [ 38.60 mins]
+k =  7400 of inf: sim.R =  -2.40718174 [best:  -2.39981413] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 38.85 mins] no improvements in 0.3 mins
+k =  7450 of inf: sim.R =  -2.44771218 [best:  -2.39981413] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 39.11 mins] no improvements in 0.5 mins
+k =  7500 of inf: sim.R =  -2.40052557 [best:  -2.39981413] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 39.37 mins] no improvements in 0.8 mins
+k =  7550 of inf: sim.R =  -2.40643764 [best:  -2.39981413] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 39.63 mins] no improvements in 1.0 mins
+k =  7600 of inf: sim.R =  -2.39742279 [best:  -2.39742279] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [ 39.90 mins]
+k =  7650 of inf: sim.R =  -2.41726780 [best:  -2.39742279] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 40.15 mins] no improvements in 0.3 mins
+k =  7700 of inf: sim.R =  -2.40010023 [best:  -2.39742279] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 40.40 mins] no improvements in 0.5 mins
+k =  7750 of inf: sim.R =  -2.39984679 [best:  -2.39742279] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 40.67 mins] no improvements in 0.8 mins
+k =  7800 of inf: sim.R =  -2.40586472 [best:  -2.39742279] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 40.92 mins] no improvements in 1.0 mins
+k =  7850 of inf: sim.R =  -2.41055036 [best:  -2.39742279] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 41.18 mins] no improvements in 1.3 mins
+k =  7900 of inf: sim.R =  -2.93849230 [best:  -2.39742279] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 41.43 mins] no improvements in 1.6 mins
+k =  7950 of inf: sim.R =  -2.39762878 [best:  -2.39742279] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 41.70 mins] no improvements in 1.8 mins
+k =  8000 of inf: sim.R =  -2.40304089 [best:  -2.39742279] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 41.95 mins] no improvements in 2.1 mins
+k =  8050 of inf: sim.R =  -2.39915514 [best:  -2.39742279] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 42.21 mins] no improvements in 2.3 mins
+k =  8100 of inf: sim.R =  -2.39442396 [best:  -2.39442396] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [ 42.47 mins]
+k =  8150 of inf: sim.R =  -2.43942499 [best:  -2.39442396] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 42.72 mins] no improvements in 0.3 mins
+k =  8200 of inf: sim.R =  -8.11118793 [best:  -2.39442396] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 42.98 mins] no improvements in 0.5 mins
+k =  8250 of inf: sim.R =  -2.39366698 [best:  -2.39366698] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [ 43.25 mins]
+k =  8300 of inf: sim.R =  -2.40979815 [best:  -2.39366698] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 43.50 mins] no improvements in 0.3 mins
+k =  8350 of inf: sim.R =  -2.41525173 [best:  -2.39366698] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 43.75 mins] no improvements in 0.5 mins
+k =  8400 of inf: sim.R =  -2.43187261 [best:  -2.39366698] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 44.00 mins] no improvements in 0.8 mins
+k =  8450 of inf: sim.R =  -2.41924906 [best:  -2.39366698] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 44.27 mins] no improvements in 1.0 mins
+k =  8500 of inf: sim.R =  -2.44300222 [best:  -2.39366698] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 44.52 mins] no improvements in 1.3 mins
+k =  8550 of inf: sim.R =  -2.40017748 [best:  -2.39366698] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 44.77 mins] no improvements in 1.5 mins
+k =  8600 of inf: sim.R =  -2.39601254 [best:  -2.39366698] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 45.02 mins] no improvements in 1.8 mins
+k =  8650 of inf: sim.R =  -2.40358496 [best:  -2.39366698] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 45.28 mins] no improvements in 2.1 mins
+k =  8700 of inf: sim.R =  -2.75154638 [best:  -2.39366698] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 45.54 mins] no improvements in 2.3 mins
+k =  8750 of inf: sim.R = -16.30506516 [best:  -2.39366698] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 45.79 mins] no improvements in 2.6 mins
+k =  8800 of inf: sim.R =  -2.44369435 [best:  -2.39366698] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 46.04 mins] no improvements in 2.8 mins
+k =  8850 of inf: sim.R =  -2.39523959 [best:  -2.39366698] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 46.29 mins] no improvements in 3.1 mins
+k =  8900 of inf: sim.R =  -2.39950371 [best:  -2.39366698] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 46.55 mins] no improvements in 3.3 mins
+k =  8950 of inf: sim.R =  -2.45375371 [best:  -2.39366698] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 46.80 mins] no improvements in 3.6 mins
+k =  9000 of inf: sim.R =  -2.39741039 [best:  -2.39366698] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 47.06 mins] no improvements in 3.8 mins
+k =  9050 of inf: sim.R =  -2.43188214 [best:  -2.39366698] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 47.31 mins] no improvements in 4.1 mins
+k =  9100 of inf: sim.R =  -2.40715170 [best:  -2.39366698] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 47.56 mins] no improvements in 4.3 mins
+k =  9150 of inf: sim.R =  -2.39921045 [best:  -2.39366698] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 47.82 mins] no improvements in 4.6 mins
+k =  9200 of inf: sim.R = -10.30959797 [best:  -2.39366698] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 48.07 mins] no improvements in 4.8 mins
+k =  9250 of inf: sim.R =  -2.41417813 [best:  -2.39366698] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 48.32 mins] no improvements in 5.1 mins
+k =  9300 of inf: sim.R =  -2.39831805 [best:  -2.39366698] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 48.58 mins] no improvements in 5.3 mins
+k =  9350 of inf: sim.R =  -2.49353623 [best:  -2.39366698] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 48.83 mins] no improvements in 5.6 mins
+k =  9400 of inf: sim.R =  -2.39357233 [best:  -2.39357233] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [ 49.10 mins]
+k =  9450 of inf: sim.R =  -2.39566302 [best:  -2.39357233] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 49.36 mins] no improvements in 0.3 mins
+k =  9500 of inf: sim.R =  -2.40087032 [best:  -2.39357233] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 49.61 mins] no improvements in 0.5 mins
+k =  9550 of inf: sim.R =  -2.43559003 [best:  -2.39357233] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 49.86 mins] no improvements in 0.8 mins
+k =  9600 of inf: sim.R =  -2.39613605 [best:  -2.39357233] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 50.11 mins] no improvements in 1.0 mins
+k =  9650 of inf: sim.R =  -2.41339946 [best:  -2.39357233] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 50.37 mins] no improvements in 1.3 mins
+k =  9700 of inf: sim.R =  -2.39343023 [best:  -2.39343023] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [ 50.64 mins]
+k =  9750 of inf: sim.R =  -2.40216541 [best:  -2.39343023] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 50.89 mins] no improvements in 0.3 mins
+k =  9800 of inf: sim.R =  -2.41135430 [best:  -2.39343023] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 51.14 mins] no improvements in 0.5 mins
+k =  9850 of inf: sim.R =  -2.39482069 [best:  -2.39343023] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 51.40 mins] no improvements in 0.8 mins
+k =  9900 of inf: sim.R =  -2.39264488 [best:  -2.39264488] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [ 51.67 mins]
+k =  9950 of inf: sim.R =  -2.44291854 [best:  -2.39264488] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 51.92 mins] no improvements in 0.3 mins
+k = 10000 of inf: sim.R =  -2.39494681 [best:  -2.39264488] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 52.18 mins] no improvements in 0.5 mins
+k = 10050 of inf: sim.R =  -2.39625096 [best:  -2.39264488] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 52.43 mins] no improvements in 0.8 mins
+k = 10100 of inf: sim.R =  -2.41400886 [best:  -2.39264488] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 52.68 mins] no improvements in 1.0 mins
+k = 10150 of inf: sim.R =  -2.39928174 [best:  -2.39264488] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 52.94 mins] no improvements in 1.3 mins
+k = 10200 of inf: sim.R =  -2.43259478 [best:  -2.39264488] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 53.19 mins] no improvements in 1.5 mins
+k = 10250 of inf: sim.R =  -2.39863038 [best:  -2.39264488] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 53.44 mins] no improvements in 1.8 mins
+k = 10300 of inf: sim.R =  -2.41156220 [best:  -2.39264488] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 53.70 mins] no improvements in 2.0 mins
+k = 10350 of inf: sim.R =  -2.42078018 [best:  -2.39264488] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 53.96 mins] no improvements in 2.3 mins
+k = 10400 of inf: sim.R = -12.99410343 [best:  -2.39264488] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 54.23 mins] no improvements in 2.6 mins
+k = 10450 of inf: sim.R =  -2.42668867 [best:  -2.39264488] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 54.48 mins] no improvements in 2.8 mins
+k = 10500 of inf: sim.R =  -2.39215064 [best:  -2.39215064] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [ 54.75 mins]
+k = 10550 of inf: sim.R =  -2.41403031 [best:  -2.39215064] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 55.01 mins] no improvements in 0.3 mins
+k = 10600 of inf: sim.R =  -2.40473008 [best:  -2.39215064] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 55.27 mins] no improvements in 0.5 mins
+k = 10650 of inf: sim.R =  -2.39512539 [best:  -2.39215064] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 55.54 mins] no improvements in 0.8 mins
+k = 10700 of inf: sim.R =  -2.39839268 [best:  -2.39215064] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 55.79 mins] no improvements in 1.1 mins
+k = 10750 of inf: sim.R =  -2.39050794 [best:  -2.39050794] [1.2 secs] [value_epochs =   0] [policy_epochs =   1] [ 56.06 mins]
+k = 10800 of inf: sim.R =  -2.39407492 [best:  -2.39050794] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 56.32 mins] no improvements in 0.3 mins
+k = 10850 of inf: sim.R =  -2.39981365 [best:  -2.39050794] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 56.58 mins] no improvements in 0.5 mins
+k = 10900 of inf: sim.R =  -2.39896250 [best:  -2.39050794] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 56.85 mins] no improvements in 0.8 mins
+k = 10950 of inf: sim.R =  -2.39149094 [best:  -2.39050794] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 57.10 mins] no improvements in 1.1 mins
+k = 11000 of inf: sim.R =  -2.39357233 [best:  -2.39050794] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 57.36 mins] no improvements in 1.3 mins
+k = 11050 of inf: sim.R =  -2.41260982 [best:  -2.39050794] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 57.61 mins] no improvements in 1.6 mins
+k = 11100 of inf: sim.R =  -2.39636326 [best:  -2.39050794] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 57.87 mins] no improvements in 1.8 mins
+k = 11150 of inf: sim.R =  -2.39295340 [best:  -2.39050794] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 58.14 mins] no improvements in 2.1 mins
+k = 11200 of inf: sim.R =  -2.39854169 [best:  -2.39050794] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 58.39 mins] no improvements in 2.3 mins
+k = 11250 of inf: sim.R =  -2.48844671 [best:  -2.39050794] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 58.65 mins] no improvements in 2.6 mins
+k = 11300 of inf: sim.R =  -2.39588308 [best:  -2.39050794] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 58.90 mins] no improvements in 2.9 mins
+k = 11350 of inf: sim.R =  -2.39832449 [best:  -2.39050794] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 59.16 mins] no improvements in 3.1 mins
+k = 11400 of inf: sim.R = -12.97610664 [best:  -2.39050794] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 59.43 mins] no improvements in 3.4 mins
+k = 11450 of inf: sim.R =  -2.44329739 [best:  -2.39050794] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 59.68 mins] no improvements in 3.6 mins
+k = 11500 of inf: sim.R =  -2.39469910 [best:  -2.39050794] [0.4 secs] [value_epochs =   0] [policy_epochs =   1] [ 59.94 mins] no improvements in 3.9 mins
+Terminating after 11513 iter, max time 60 mins reached
+R = -2.3905, time = 60.0 mins, iter = 11513, policy epochs = 1.00, value epochs = 0.00
