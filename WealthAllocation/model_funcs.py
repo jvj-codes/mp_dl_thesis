@@ -86,7 +86,7 @@ def outcomes(model, states, actions, t0 = 0, t=None):
     pi  = states[...,4]  # inflation at time t
     R_b  = states[...,5]  # nominal interest rate at time t
     R_e  = states[...,6]  # return on equities at time t
-    R_q  = states[...,7]  # return on house at time t
+    h_prev = states[...,7] # house holdings at time t, for t-1
     
     # c. shares of labor, debt and portfolio allocation from actions
     n_act   = actions[...,0]  # labor hours share
@@ -94,12 +94,6 @@ def outcomes(model, states, actions, t0 = 0, t=None):
     alpha_e = actions[...,2]  # equity share
     alpha_b = actions[...,3]  # bond share
     alpha_h = actions[...,4]  # house share
-    
-    ## normalize portfolio allocation to 1
-    #total_alpha = alpha_e + alpha_b + alpha_h 
-    alpha_e_norm = alpha_e #/total_alpha
-    alpha_b_norm = alpha_b #/total_alpha
-    alpha_h_norm = alpha_h #/total_alpha
 
     
     # d. calculate outcomes 
@@ -140,24 +134,28 @@ def outcomes(model, states, actions, t0 = 0, t=None):
              d_n = torch.zeros_like(w)
              n_act = par.n_retired*torch.ones_like(w)
              x = m + par.kappa[t]*w*n_act
-             #x = m + w*n_act
-    ## housing
-    h_n = alpha_h_norm*(1-alpha_e_norm)*(1-alpha_b_norm)*x #/q
-    h_n = torch.clamp(h_n, min=1e-6)
+      
+    ## ressources
+    x = torch.clamp(x, min=1e-3)
+    
+    x_h = alpha_h*(1-alpha_e)*(1-alpha_b)*x 
+    x_h = torch.clamp(x_h, min=1e-6)
+    
+    h = x_h / q + h_prev
     
     ## consumption
-    c = (1-alpha_h_norm)*(1-alpha_e_norm)*(1-alpha_b_norm)*x
-    c = torch.clamp(c, min=1e-6)
+    c = (1-alpha_h)*(1-alpha_e)*(1-alpha_b)*x
+    c = torch.clamp(c, min=1e-3)
 
     # bonds    
-    b = alpha_b_norm * x
-    b = torch.clamp(b, min=1e-6)
+    b = alpha_b * x
+    b = torch.clamp(b, min=1e-3)
     
     # equity with clamping
-    e = alpha_e_norm*(1-alpha_b_norm) * x
-    e = torch.clamp(e, min=1e-6)
+    e = alpha_e*(1-alpha_b) * x
+    e = torch.clamp(e, min=1e-3)
     
-    return torch.stack((c, h_n, n_act, x, b, e, d_n),dim=-1)
+    return torch.stack((c, h, n_act, x, b, e, d_n),dim=-1)
         
 #%% Reward
 
@@ -219,14 +217,14 @@ def state_trans_pd(model,states,actions,outcomes,t0=0,t=None):
     d_n = outcomes[...,6]
     
     # c. get state observations
-    w = states[...,0]  # inflation at time t
-    m = states[...,1]   # real money holdings at time t
-    d = states[...,2]  # debt accumulated to time t
-    q  = states[...,3]  # real house prices at time t
-    pi  = states[...,4]  # inflation at time t
+    w = states[...,0]     # inflation at time t
+    m = states[...,1]     # real money holdings at time t
+    d = states[...,2]     # debt accumulated to time t
+    q  = states[...,3]    # real house prices at time t
+    pi  = states[...,4]   # inflation at time t
     R_b  = states[...,5]  # nominal interest rate at time t
     R_e  = states[...,6]  # return on equities at time t
-    R_q  = states[...,7]  # return on house at time t
+    h_prev = states[...,7]
     
     # d. get actions
     n_act   = actions[...,0]  # labor hours share
@@ -235,7 +233,7 @@ def state_trans_pd(model,states,actions,outcomes,t0=0,t=None):
     alpha_b = actions[...,3]  # bond share
     alpha_h = actions[...,4]  # house share
 
-    states_pd = torch.stack([b,e,h,w,q,d,d_n,pi,R_b], dim=-1)
+    states_pd = torch.stack([b,e,h,w,q,d,d_n,pi,R_b,h_prev], dim=-1)
 
     if par.Nstates_fixed > 0:
         fixed_states = states[..., -par.Nstates_fixed:]
@@ -260,6 +258,7 @@ def state_trans(model,state_trans_pd,shocks,t=None):
     d_n_pd = state_trans_pd[...,6]
     pi_pd = state_trans_pd[...,7]
     R_b_pd = state_trans_pd[...,8]
+    h_pd_prev = state_trans_pd[...,9]
 
     if par.Nstates_fixed > 0:
         beta = state_trans_pd[...,9]
@@ -268,6 +267,7 @@ def state_trans(model,state_trans_pd,shocks,t=None):
             #beta = expand_to_quad(beta, train.Nquad)    
             beta = beta.unsqueeze(-1)  
             beta = beta.unsqueeze(2).expand(-1, -1, train.Nquad, -1)  # (T, N, Nquad, 1)
+            
     # c. unpack shocks
     psi_plus = shocks[:,0]
     epsn_R_plus = shocks[:,1]
@@ -297,33 +297,44 @@ def state_trans(model,state_trans_pd,shocks,t=None):
     # c. calculate inflation, interest rate, return on investment
 
     pi_plus = (1-par.rhopi)*par.pi_star + par.rhopi*pi_pd - par.Rpi*R_b_pd + epsn_pi_plus 
-    
+
     R_plus = epsn_R_plus * (par.R_star+1) * ((1+pi_plus)/(1+par.pi_star))**((par.A*(par.R_star+1))/(par.R_star)) #next period nominal interest rate adjusted by centralbank
 
     R_e_plus = pi_plus - R_plus + epsn_e_plus #next period equity returns
-  
-    q_plus = (par.q_h*(R_e_plus - R_plus) + q_pd + epsn_h_plus)/(1+pi_plus) #next period real house prices
-
+    
+    #q_plus = (par.q0  + par.rho_q  * q_pd - par.q_h * q_pd * (R_b_pd - par.R_star) + epsn_h_plus) / (1 + pi_plus)  # real price next period
+    q_tilde = (1-par.rho_q)*par.q_bar + par.rho_q * torch.log(q_pd) - par.q_h*(R_b_pd - par.R_star) - pi_plus + epsn_h_plus
+    q_plus = torch.exp(q_tilde)
+    
     if t is None:
-        w_plus_before = ((par.gamma - par.theta*(R_b_pd[:par.T_retired] - par.R_star)) * psi_plus[:par.T_retired] * w_pd[:par.T_retired]) * torch.ones_like(w_pd[:par.T_retired]) / (1 + pi_plus[:par.T_retired]) 
+        w_plus_before = ((1 + pi_pd[:par.T_retired] + par.gamma) * w_pd[:par.T_retired]*par.rho_w - par.theta*q_pd[:par.T_retired]*(R_b_pd[:par.T_retired] - par.R_star) + psi_plus[:par.T_retired])/ (1 + pi_plus[:par.T_retired]) 
         w_plus_after = w_pd[par.T_retired:] / (1 + pi_plus[par.T_retired:])
         w_plus = torch.cat((w_plus_before, w_plus_after), dim=0)
     else:
         if t < par.T_retired:
-            w_plus = ((par.gamma - par.theta*(R_b_pd - par.R_star)) * psi_plus * w_pd) / (1 + pi_plus)
+            #w_plus = (w_pd*(1+pi_pd + par.gamma)*par.rho_w - par.theta*q_pd*(R_b_pd - par.R_star) + psi_plus) / (1 + pi_plus)
+            print(w_pd.mean())
+            w_tilde = (1-par.rho_w)*par.w_bar + par.rho_w*torch.log(w_pd) - par.theta * (R_b_pd - par.R_star) + pi_pd - pi_plus + psi_plus
+            w_plus = torch.exp(w_tilde)
         else:
-            w_plus = w_pd / (1+pi_plus)
-
-    R_q_plus = (q_plus - q_pd)/q_pd 
-
-    R_d_plus = R_plus + par.eps_rp
+            w_tilde = torch.log(w_pd) - pi_plus
+            w_plus = torch.exp(w_tilde)
+            
+    q_pd_adj = q_pd*(1+pi_pd)                             #nominel price on house previously
+    R_q_plus =  (q_plus*(1+pi_plus) - q_pd_adj)/q_pd_adj  #nominel return on house
+    
+    rb_plus = (1 + R_plus)/(1 + pi_plus)
+    re_plus = (1 + R_e_plus)/(1 + pi_plus)
+    rq_plus = (1 + R_q_plus)/(1 + pi_plus)
+    rd_plus = (1 + R_plus + par.eps_rp)/(1 + pi_plus)
     
 
-    m_plus = (1+R_plus*b_pd)/(1+pi_plus) + (1+R_e_plus)*e_pd/(1+pi_plus) + (1+R_q_plus)*h_pd - (par.lbda + R_d_plus)*(d_pd+d_n_pd)/(1+pi_plus) -(h_pd/(1+pi_plus))*abs(q_plus - q_pd)
+    #m_plus = rb_plus*b_pd + re_plus*e_pd + rq_plus*h_pd - (par.lbda + rd_plus -1 )*(d_pd+d_n_pd) -par.h_cost * h_pd* torch.sqrt(abs(q_plus - q_pd))
+    m_plus = rb_plus*b_pd + re_plus*e_pd + rq_plus*h_pd*q_pd - (par.lbda + rd_plus -1 )*(d_pd+d_n_pd) -par.tau * (h_pd - h_pd_prev)**2 * q_pd
     d_plus = (1-par.lbda)*(d_pd+d_n_pd)/(1+pi_plus)
     
     # e. finalize
-    states_plus = torch.stack((w_plus,m_plus,d_plus,q_plus,pi_plus,R_plus,R_e_plus,R_q_plus),dim=-1)
+    states_plus = torch.stack((w_plus,m_plus,d_plus,q_plus,pi_plus,R_plus,R_e_plus, h_pd),dim=-1)
 
     
     #print('states_plus shape:', states_plus.shape)
@@ -383,6 +394,7 @@ def terminal_reward_pd(model, states_pd):
 		# avoid log(0) or negative values
 		net_wealth = torch.clamp(b_pd + e_pd + h_pd - d_pd, min=1e-6)
 		u = par.bequest * (net_wealth ** (1 - par.sigma_int)) / (1 - par.sigma_int)
+		#u = par.bequest * net_wealth 
 		#u = par.bequest * torch.log(net_wealth)
 		#u = par.bequest * torch.log(m - d_pd)
 

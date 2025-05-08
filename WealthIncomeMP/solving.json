@@ -1,0 +1,114 @@
+[
+    {
+        "timestamp": "2025-05-06 17:50:23",
+        "terminate": true
+    },
+    {
+        "timestamp": "2025-05-06 17:59:00",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-06 17:59:38",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-06 18:01:18",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-06 18:01:39",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-06 18:02:27",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-06 18:03:04",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-06 18:06:39",
+        "terminate": true
+    },
+    {
+        "timestamp": "2025-05-06 18:07:21",
+        "terminate": true
+    },
+    {
+        "timestamp": "2025-05-06 18:09:11",
+        "terminate": true
+    },
+    {
+        "timestamp": "2025-05-08 16:38:04",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-08 16:40:05",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-08 16:41:21",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-08 16:43:06",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-08 16:46:06",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-08 16:47:15",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-08 16:48:57",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-08 17:02:43",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-08 17:04:12",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-08 17:07:15",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-08 17:19:01",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-08 17:24:18",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-08 17:49:35",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-08 17:53:38",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-08 18:05:21",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-08 18:22:16",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-08 18:26:41",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-08 18:42:50",
+        "terminate": false
+    }
+]
