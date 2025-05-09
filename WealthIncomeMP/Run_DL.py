@@ -27,10 +27,16 @@ device = choose_gpu()
 model_DL = {}
 
 # DeepSimulate
-K_time = 1 #20.0
+K_time = 20 #20.0
 model_DL['DeepSimulate'] = WealthIncomeModelClass(algoname='DeepSimulate', par={'Nstates_fixed': 1}, device=device,train={'K_time': K_time})
 model_DL['DeepSimulate'].solve(do_print=True)
 
+# DeepFOC
+K_time = 20 #20.0
+model_DL['DeepFOC'] = WealthIncomeModelClass(algoname='DeepFOC', par={'Nstates_fixed': 1}, device=device,train={'K_time': K_time})
+model_DL['DeepFOC'].solve(do_print=True)
+
+model_DL['DeepSimulate'].train.K_time += 20
 
 
 model_DL['DeepSimulate'].compute_euler_errors()

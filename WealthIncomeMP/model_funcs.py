@@ -80,11 +80,13 @@ def outcomes(model, states, actions, t0 = 0, t=None):
     pi  = states[...,3]  # inflation at time t
     R_b  = states[...,4]  # nominal interest rate at time t
     R_e  = states[...,5]  # return on illiquid assets at time t
+    d = states[...,6]  # debt carried over from t-1
     
     # c. shares of labor, debt and portfolio allocation from actions
     n_act   = actions[...,0]  # labor hours share
     alpha_e = actions[...,1]  # equity share
     alpha_b = actions[...,2]  # bond share
+    alpha_d = actions[...,3]  # bond share
 
     
     # d. calculate outcomes 
@@ -99,23 +101,30 @@ def outcomes(model, states, actions, t0 = 0, t=None):
             kappa = par.kappa[:T].reshape(-1,1).repeat(1,N)
 
         if par.T_retired == par.T: #condition if retirement year is equal to full time period
-            s = m + kappa[:par.T]*w*n_act 
+            
+            s = m + kappa[:par.T]*w*n_act + par.phi*a*alpha_d
             
         else:
             n_act_before = n_act[:par.T_retired]
             n_act_after = torch.ones_like(w[par.T_retired:])*par.n_retired
             n_act = torch.cat((n_act_before, n_act_after), dim=0)
             
-            s_before = m[:par.T_retired] + kappa[:par.T_retired]*w[:par.T_retired]*n_act_before
-            s_after = m[par.T_retired:] + kappa[par.T_retired:]*w[par.T_retired:]*n_act_after
+            d_before = par.phi*a[:par.T_retired]*alpha_d[:par.T_retired]
+            d_after = torch.zeros_like(w[par.T_retired:])
+            d_n = torch.cat((d_before, d_after), dim=0)
+            
+            s_before = m[:par.T_retired] + kappa[:par.T_retired]*w[:par.T_retired]*n_act_before + d_before
+            s_after = m[par.T_retired:] + kappa[par.T_retired:]*w[par.T_retired:]*n_act_after + d_after
             s = torch.cat((s_before, s_after), dim=0)
             
         
     else: #when simulating
         
          if t < par.T_retired:
-             s = m + par.kappa[t]*w*n_act
+             d_n = alpha_d * a * par.phi
+             s = m + par.kappa[t]*w*n_act + d_n
          else:   
+             d_n = torch.zeros_like(w)
              n_act = par.n_retired*torch.ones_like(w)
              s = m + par.kappa[t]*w*n_act
       
@@ -136,7 +145,7 @@ def outcomes(model, states, actions, t0 = 0, t=None):
     
     a_t = a_bar + a
         
-    return torch.stack((c, n_act, s, b, a_t),dim=-1)
+    return torch.stack((c, n_act, s, b, a_t,d_n),dim=-1)
         
 #%% Reward
 
@@ -193,6 +202,7 @@ def state_trans_pd(model,states,actions,outcomes,t0=0,t=None):
     s_pd = outcomes[...,2]
     b_pd = outcomes[...,3]
     a_pd = outcomes[...,4]
+    d_pd = outcomes[...,5]
     
     # c. get state observations
     a_prev = states[...,0]  # illiquid assets carried over from t-1
@@ -201,13 +211,15 @@ def state_trans_pd(model,states,actions,outcomes,t0=0,t=None):
     pi_pd  = states[...,3]  # inflation at time t
     R_b_pd  = states[...,4]  # nominal interest rate at time t
     R_e_pd  = states[...,5]  # return on illiquid assets at time t
+    d_prev = states[...,6]  # debt carried over from t-1
     
     # d. get actions
     n_act   = actions[...,0]  # labor hours share
     alpha_e = actions[...,1]  # equity share
     alpha_b = actions[...,2]  # bond share
+    alpha_d = actions[...,3]
 
-    states_pd = torch.stack([a_pd,  a_prev, b_pd, w_pd, pi_pd, R_b_pd, R_e_pd], dim=-1)
+    states_pd = torch.stack([a_pd,  a_prev, b_pd, w_pd, pi_pd, R_b_pd, R_e_pd,d_prev,d_pd], dim=-1)
 
     if par.Nstates_fixed > 0:
         fixed_states = states[..., -par.Nstates_fixed:]
@@ -230,6 +242,8 @@ def state_trans(model,state_trans_pd,shocks,t=None):
     pi_pd = state_trans_pd[...,4]
     R_b_pd = state_trans_pd[...,5]
     R_e_pd = state_trans_pd[...,6]
+    d_prev = state_trans_pd[...,7]
+    d_pd = state_trans_pd[...,8]
 
     if par.Nstates_fixed > 0:
         beta = state_trans_pd[..., -par.Nstates_fixed:]
@@ -253,6 +267,8 @@ def state_trans(model,state_trans_pd,shocks,t=None):
         pi_pd  = expand_to_quad(pi_pd, train.Nquad)
         R_b_pd  = expand_to_quad(R_b_pd, train.Nquad)
         R_e_pd  = expand_to_quad(R_e_pd, train.Nquad)
+        d_prev = expand_to_quad(d_prev, train.Nquad)
+        d_pd = expand_to_quad(d_pd, train.Nquad)
         
         psi_plus     = expand_to_states(psi_plus,state_trans_pd)
         epsn_R_plus  = expand_to_states(epsn_R_plus,state_trans_pd)
@@ -283,6 +299,7 @@ def state_trans(model,state_trans_pd,shocks,t=None):
     
     Ra_plus = torch.exp(log_Ra_plus)
     
+    # 4. Wages
     if t is None:
         w_tilde_before = (1-par.rho_w)*torch.log(torch.tensor(par.w_bar)) + par.rho_w*torch.log(w_pd[:par.T_retired]) - par.theta * (torch.log(R_b_pd[:par.T_retired]) - torch.log(torch.tensor(par.R_bar))) + torch.log(pi_pd[:par.T_retired]) - torch.log(pi_plus[:par.T_retired]) + psi_plus
         w_tilde_after = torch.log(w_pd[par.T_retired:]) + torch.log(pi_pd[par.T_retired:]) - torch.log(pi_plus[par.T_retired:])
@@ -297,11 +314,15 @@ def state_trans(model,state_trans_pd,shocks,t=None):
         else:
             w_tilde = torch.log(w_pd) + torch.log(pi_pd)- torch.log(pi_plus)
             w_plus = torch.exp(w_tilde)
-
-    m_plus =  (R_b_pd / pi_plus) * b_pd + (Ra_plus/pi_plus -1) * a_pd - par.gamma * (a_pd - a_prev)**2 
+    
+    # 5. Debt 
+    d_plus = (1-par.lbda)*d_prev + d_pd
+    
+    # 6. Cash on Hand
+    m_plus =  (R_plus / pi_plus) * b_pd + (Ra_plus/pi_plus -1) * a_pd - par.gamma * (a_pd - a_prev)**2 - (par.lbda + (R_plus/pi_plus -1))*d_prev
     
     # e. finalize
-    states_plus = torch.stack((a_pd,w_plus,m_plus,pi_plus, R_plus, Ra_plus) ,dim=-1)
+    states_plus = torch.stack((a_pd,w_plus,m_plus,pi_plus, R_plus, Ra_plus, d_plus) ,dim=-1)
 
     if par.Nstates_fixed > 0:
         # Ensure beta has the correct shape
@@ -388,28 +409,39 @@ def eval_KKT(model, states, states_plus, actions, actions_plus, outcomes, outcom
     beta = discount_factor(model, states)
 
     # --- a. Extract current states ---
-    a_prev, w, m, pi, R_b, R_e = [states[..., i] for i in range(6)]
+    a_prev, w, m, pi, R_b, R_e, d_prev = [states[..., i] for i in range(7)]
 
 
     # --- b. Extract future states ---
-    a_plus, w_plus, m_plus, pi_plus, R_b_plus, R_e_plus = [states_plus[..., i] for i in range(6)]
+    a, w_plus, m_plus, pi_plus, R_b_plus, R_e_plus, d = [states_plus[..., i] for i in range(7)]
 
     # --- c. Extract outcomes ---
-    c, n, s, b, a_pd  = [outcomes[..., i] for i in range(5)]
+    c, n, s, b, a_pd, d_pd  = [outcomes[..., i] for i in range(6)]
     
-    # --- c. Extract future outcomes ---
-    c_plus, n_plus, s_plus, b_plus, a_pd_plus = [outcomes_plus[..., i] for i in range(5)]
+    # --- d. Extract future outcomes ---
+    c_plus, n_plus, s_plus, b_plus, a_pd_plus, d_pd_plus = [outcomes_plus[..., i] for i in range(6)]
 
-    # --- d. Extract actions ---
-    n_act, alpha_e, alpha_b = [actions[..., i] for i in range(3)]
+    # --- e. Extract actions ---
+    n_act, alpha_e, alpha_b, alpha_d, lambda_t = [actions[..., i] for i in range(5)]
+    
+    # --- f. Clamping ---
+    s = torch.clamp(s, min=1e-3)
+    c = torch.clamp(c, min=1e-3)
+    b = torch.clamp(b, min=1e-3)
+    a_pd = torch.clamp(a_pd, min=1e-3)
+    
+    s_plus = torch.clamp(s_plus, min=1e-3)
+    c_plus = torch.clamp(c_plus, min=1e-3)
+    b_plus = torch.clamp(b_plus, min=1e-3)
+    a_pd_plus = torch.clamp(a_pd_plus, min=1e-3)
     
 
     # --- e. Marginal utilities ---
+    # f. marginal utility current and next period
     marg_util_c_t = marg_util_c(c, par)
     marg_util_n_t = marg_util_n(n, par)
 
     marg_util_c_plus = marg_util_c(c_plus, par)
-    marg_util_n_plus = marg_util_n(n_plus, par)
 
     # --- f. Expand relevant variables for time t ---
     kappa = (s - m) / (n_act * w )
@@ -418,42 +450,50 @@ def eval_KKT(model, states, states_plus, actions, actions_plus, outcomes, outcom
     
     # --- g. Derive FOCS ---
     #  Illiquid alpha_t^e share FOC
-    term_e = (R_e_plus/pi_plus -1) - 2*par.gamma*(a_pd_exp - a_prev_exp) + 2*par.gamma*(a_pd_plus - a_plus)
+    term_e = (R_e_plus/pi_plus -1) - 2*par.gamma*(a_pd_exp - a_prev_exp) + 2*par.gamma*(a_pd_plus - a)
     rhs_e = torch.sum(train.quad_w[None, None, :]*term_e* marg_util_c_plus, dim=-1)
     lhs_e = marg_util_c_t
-    FOC_e = lhs_e[:-1] - beta[:-1] * rhs_e
+    FOC_ilq_ = beta[:-1] * rhs_e - lhs_e[:-1]
+    FOC_ilq_terminal = lhs_e[-1]
+    FOC_ilq = torch.cat((FOC_ilq_,FOC_ilq_terminal[None,...]),dim=0)
 
     # Liquid alpha_t^b share FOC
-    term_b = R_b_exp / pi_plus 
+    term_b = R_b_plus / pi_plus - (R_e_plus/pi_plus -1)*alpha_e_exp + alpha_e_exp * 2*par.gamma*(a_pd_plus - a)
     rhs_b = torch.sum(train.quad_w[None, None, :]*term_b* marg_util_c_plus, dim=-1)
     lhs_b = (1-alpha_e) * marg_util_c_t
-    FOC_b = lhs_b[:-1] - beta[:-1] * rhs_b
+    FOC_bond_ = beta[:-1] * rhs_b - lhs_b[:-1]
+    FOC_bond_terminal = lhs_b[-1]
+    FOC_bond = torch.cat((FOC_bond_,FOC_bond_terminal[None,...]),dim=0)
     
-    # Labor Supply Allocation
-    term_n = alpha_b_exp * R_b_exp / pi_plus + (1-alpha_b_exp)*alpha_e_exp*(R_e_plus/pi_plus - 2*par.gamma*(a_pd_exp - a_prev_exp) )
-    rhs_n = w*kappa*torch.sum(train.quad_w[None, None, :]*term_n* marg_util_c_plus, dim=-1)
-    lhs_n = marg_util_n_t + marg_util_c_t * (1-alpha_e)*(1-alpha_b)
-    FOC_n = lhs_n[:-1] - beta[:-1] * rhs_n
-
-   
+    # Labor supply n_t share FOC
+    term_n = alpha_b_exp * (R_b_plus) / pi_plus + (1-alpha_b_exp)*alpha_e_exp*((R_e_plus/pi_plus-1) - 2*par.gamma*(a_pd_exp - a_prev_exp) )
+    rhs_n = torch.sum(train.quad_w[None, None, :]*term_n* marg_util_c_plus, dim=-1)
+    lhs_n = marg_util_n_t/w*kappa + marg_util_c_t * (1-alpha_e)*(1-alpha_b)
+    FOC_labor_ =  beta[:-1] * rhs_n - lhs_n[:-1]
+    FOC_labor_terminal = lhs_n[-1]
+    FOC_labor = torch.cat((FOC_labor_,FOC_labor_terminal[None,...]),dim=0)
+    
+    # Debt allocation alpha_t^d
+    term_d = alpha_b_exp * (R_b_plus) / pi_plus + (1-alpha_b_exp)*alpha_e_exp*(R_e_plus/pi_plus-1) - (par.lbda + (R_b_plus/pi_plus  -1))
+    rhs_d = torch.sum(train.quad_w[None, None, :]*term_d*marg_util_c_plus, dim=-1)
+    lhs_d = marg_util_c_t * (1-alpha_e)*(1-alpha_b)
+    FOC_debt_ = beta[:-1] * rhs_d - lhs_d[:-1] 
+    FOC_debt_terminal = lhs_d[-1]
+    FOC_debt = torch.cat((FOC_debt_,FOC_debt_terminal[None,...]),dim=0)
+    
     # --- h. Constraints ---
-    #constraint1 = par.vartheta * w * n_act - d_n
-    #slackness1 = constraint1 * lbda_t
-
-    #constraint2 = par.vartheta * w
-    #slackness2 = constraint2 * lbda_t
-
-    #constraint3 = alpha_b_norm + alpha_e_norm + alpha_h_norm - 1.0
-    #slackness3 = constraint3 * mu_t
+    constraint = par.phi*a_prev - d_pd
+    slackness_ = constraint[:-1] * lambda_t[:-1]
+    slackness_terminal = constraint[-1]
+    slackness = torch.cat((slackness_,slackness_terminal[None,...]),dim=0)
 
     # --- i. Final loss (squared KKT residuals) ---
     eq = torch.stack((
-        FOC_e**2,
-        FOC_b**2,
-        FOC_n**2
-        #slackness1[:-1]**2,
-        #slackness2[:-1]**2,
-        #slackness3[:-1]**2
+        FOC_ilq**2,
+        FOC_bond**2,
+        FOC_labor**2,
+        FOC_debt**2,
+        slackness[:-1]**2
     ), dim=-1)
 
     return eq

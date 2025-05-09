@@ -53,61 +53,68 @@ class WealthIncomeModelClass(DLSolverClass):
         par.n_retired = 0.1             #fixed part-time work at retirment
         
         # a.3 Monetary policy 
-        par.rho_R = 0.35          #inertia of nominal interest rate
-        par.R_bar = 1.015          #target nominal interest rate
-        par.phi_pi = 1.3            #stance on inflation
+        par.rho_R = 0.35          #inertia of nominal interest rate: Braun & Ikeda (2025)
+        par.R_bar = 1.005         #target nominal interest rate: Ralph Luetticke (2020)
+        par.phi_pi = 1.5          #stance on inflation: Ralph Luetticke (2020)
         
         # a.4 Inflation
-        par.pi_bar = 1.02         #target inflation
-        par.rho_pi = 0.32         #inertia of inflation
-        par.phi_R = 0.015         #impact on inflation
+        par.pi_bar = 1.02         #target inflation: ECB (2025)
+        par.rho_pi = 0.32         #inertia of inflation: Danish data
+        par.phi_R = 0.015         #impact on inflation: Danish data
         
         # a.5 Iliquid return & cost
-        par.Ra_bar = 1.05
-        par.phi_Ra = 0.8
-        par.rho_a = 0.15
-        par.gamma = 0.1
+        par.Ra_bar = 1.05 #
+        par.phi_Ra = 0.8 #high impact
+        par.rho_a = 0.15 #low persistence
+        par.gamma = 0.05 #survey
         
-        # a.6 Wage
-        par.w_bar = 10
-        par.rho_w = 0.75
-        par.theta = 0.10 
+        # a. 6 Debt
+        par.phi = 2.5    #loan-to-value
+        par.lbda = 0.05  #Repayment
+        
+        # a.7 Wage
+        par.w_bar = 10   # This is purely a scaling choice and does not affect the model’s qualitative dynamics.
+        par.rho_w = 0.75 #persistence of income
+        par.theta = 0.10 #Andersen, A.L., Johannesen, N., Jørgensen, M. & Peydró, J.-L. (2021). Monetary Policy and Inequality.
 
-        # a.7 moments for shocks
-        par.psi_sigma = 0.01             #wage shock (std. dev)
-        par.psi_mu = 0.02                #wage shock mean
+        # a. 8 moments for shocks
+        par.psi_sigma = 0.08             #wage shock (std. dev) Moira Daly, Dmytro Hryshko, and Iourii Manovskii1 (2022)
+        par.psi_mu = 0.00                #wage shock mean
         par.Npsi = 4                     #wage shock quadrature nodes   
         
-        par.e_sigma = 0.02               #illiquid returns shock (std. dev) 
+        par.e_sigma = 0.04               #illiquid returns shock (std. dev) 
         par.e_mu = 0.00                  #illiquid returns shock (mean)
         par.Ne = 4                       #illiquid returns shock quadrature nodes
         
-        par.R_sigma = 0.0005             #monetary policy shock (std. dev)
+        par.R_sigma = 9e-4               #monetary policy shock (std. dev), Wieland and Yang (2016)
         par.R_mu = 0.0                   #monetary policy shock (mean)
         par.NR = 4 #4                    #monetary policy shock quadrature nodes
         
-        par.pi_sigma = 0.02              #inflation shock (std. dev)
+        par.pi_sigma = 0.02              #inflation shock (std. dev) Standard value
         par.pi_mu = 0.00                 #inflation shock (mean)
         par.Npi  = 4 #4                  #inflation shock quardrature nodes
     
-        # a.8 initial states
-        par.pi_min = 1.02 # minimum inflation of 2% 
-        par.pi_max = 1.03 # maximum inflation of 3%
+        # a.9 initial states
+        par.pi_min = 1.02 # minimum inflation of 2%, DST data
+        par.pi_max = 1.03 # maximum inflation of 3%, DST data
         
-        par.R_min = 1.025  # minimum interest rate of 2%
-        par.R_max = 1.045  # maximum interest rate of 4%
+        par.R_min = 1.025  # minimum interest rate of 2%, DST data
+        par.R_max = 1.045  # maximum interest rate of 4%, DST data
 
         par.R_a0_min = 1.02
         par.R_a0_max = 1.04  
         
-        par.sigma_m0 = 0.5226 
-        par.mu_m0 = 0.1446
+        par.sigma_m0 = 0.5226 #DST data
+        par.mu_m0 = 0.1446 #DST data
         
-        par.sigma_w0 = 0.1446
-        par.mu_w0 = -6.7336
+        par.sigma_w0 = 0.1446 #DST data
+        par.mu_w0 = -6.7336 #DST data
         
-        par.sigma_a0 = 0.1446
-        par.mu_a0 = -0.6901
+        par.sigma_a0 = 0.1446 #DST data
+        par.mu_a0 = -0.6901 #DST data
+        
+        par.sigma_d0 = 0.1446 #DST data
+        par.mu_d0 = -6.7336 #DST data
         
         par.mu_beta = 0.975
         par.sigma_beta = 0.005
@@ -120,10 +127,10 @@ class WealthIncomeModelClass(DLSolverClass):
         # states, actions and shocks
         par.Nstates_fixed = 0 # 1 = heterogenous beta, 0 = fixed beta
         par.Nshocks = 4
-        par.Nactions = 3
+        par.Nactions = 4
         
         # outcomes and actions
-        par.Noutcomes = 5 # consumption, house holdings, labor, funds
+        par.Noutcomes = 6 # consumption, house holdings, labor, funds
         par.KKT = False ## use KKT conditions (for DeepFOC)
         par.NDC = 0 # number of discrete choices
         
@@ -148,16 +155,16 @@ class WealthIncomeModelClass(DLSolverClass):
             sim.N = 15_000 #5000 #500 #1000 #5000 #10_000
             
         if par.KKT:
-            par.Nactions = 4 #revisit when focs are done
+            par.Nactions = 5 
         else:
-            par.Nactions = 3
+            par.Nactions = 4
         
         if par.Nstates_fixed == 1:
-            par.Nstates = 7
-            par.Nstates_pd = 8 
+            par.Nstates = 8
+            par.Nstates_pd = 10
         else:
-            par.Nstates = 6
-            par.Nstates_pd = 7 
+            par.Nstates = 7
+            par.Nstates_pd = 9 
             
         # b. life cycle income
         par.kappa = torch.zeros(par.T,dtype=dtype,device=device)
@@ -215,15 +222,15 @@ class WealthIncomeModelClass(DLSolverClass):
         # b. policy activation functions and clipping
         if par.KKT:
             ## n, alpha_e, alpha_b
-            train.policy_activation_final = ['sigmoid', 'sigmoid', 'sigmoid','softplus','softplus']
+            train.policy_activation_final = ['sigmoid', 'sigmoid', 'sigmoid','sigmoid','softplus']
             train.min_actions = torch.tensor([0.0000, 0.0000, 0.0000, 0.0000, 0.0000],dtype=dtype,device=device) #minimum action value n, alpha_d, alpha_e, alpha_b, alpha_h
-            train.max_actions = torch.tensor([0.9999, 0.9999, 0.9999, np.inf, np.inf],dtype=dtype,device=device) #maximum action value n, alpha_d, alpha_e, alpha_b, alpha_h
+            train.max_actions = torch.tensor([0.9999, 0.9999, 0.9999, 0.9999, np.inf],dtype=dtype,device=device) #maximum action value n, alpha_d, alpha_e, alpha_b, alpha_h
             
         else: 
-            ## n, alpha_e, alpha_b
-            train.policy_activation_final = ['sigmoid', 'sigmoid', 'sigmoid']
-            train.min_actions = torch.tensor([0.0000, 0.0000, 0.0000],dtype=dtype,device=device) #minimum action value n, alpha_d, alpha_e, alpha_b, alpha_h
-            train.max_actions = torch.tensor([1.0-1e-6, 1.0-1e-6, 1.0-1e-6],dtype=dtype,device=device) #maximum action value n, alpha_d, alpha_e, alpha_b, alpha_h
+            ## n, alpha_e, alpha_b, alpha_d
+            train.policy_activation_final = ['sigmoid', 'sigmoid', 'sigmoid', 'sigmoid']
+            train.min_actions = torch.tensor([0.0000, 0.0000, 0.0000, 0.0000],dtype=dtype,device=device) #minimum action value n, alpha_d, alpha_e, alpha_b, alpha_h
+            train.max_actions = torch.tensor([1.0-1e-6, 1.0-1e-6, 1.0-1e-6, 1.0-1e-6],dtype=dtype,device=device) #maximum action value n, alpha_d, alpha_e, alpha_b, alpha_h
 
         # c. misc
         train.terminal_actions_known = False # use terminal actions
@@ -242,7 +249,7 @@ class WealthIncomeModelClass(DLSolverClass):
             train.start_train_policy = 50          
           
         if train.algoname == 'DeepFOC':
-            train.eq_w = torch.tensor([3.0, 3.0, 3.0],dtype=dtype,device=device) 
+            train.eq_w = torch.tensor([3.0, 3.0, 3.0, 3.0, 5.0],dtype=dtype,device=device) 
             
         if train.algoname == 'DeepSimulate':
             train.learning_rate_policy = 1e-4
@@ -251,8 +258,8 @@ class WealthIncomeModelClass(DLSolverClass):
                 train.epsilon_sigma = np.array([0.1,0.1,0.1,0.1]) 
                 train.epsilon_sigma_min = np.array([0.0,0.0,0.0,0.0])
             else:
-                train.epsilon_sigma = np.array([0.1,0.1,0.1]) 
-                train.epsilon_sigma_min = np.array([0.0,0.0,0.0])
+                train.epsilon_sigma = np.array([0.1,0.1,0.1,0.1]) 
+                train.epsilon_sigma_min = np.array([0.0,0.0,0.0,0.0])
             
     def allocate_train(self):
         
@@ -318,15 +325,18 @@ class WealthIncomeModelClass(DLSolverClass):
         # f. draw initial money holdings
         m0 = torch.exp(torch.normal(mean= par.mu_m0, std=par.sigma_m0, size=(N,))) 
         
+        # g. draw initialdebt
+        d0 = torch.exp(torch.normal(mean= par.mu_d0, std=par.sigma_d0, size=(N,))) 
+        
         if par.Nstates_fixed > 0: 
             raw_beta = torch.normal(mean=par.mu_beta, std=par.sigma_beta, size=(N,))
             beta = torch.clamp(raw_beta, min= 0.95, max=0.99)
 
         # g. store
         if par.Nstates_fixed == 0:
-            return torch.stack((a0, w0, m0, pi0, R0, R_a0),dim=-1)
+            return torch.stack((a0, w0, m0, pi0, R0, R_a0, d0),dim=-1)
         elif par.Nstates_fixed > 0:
-            return torch.stack((a0, w0, m0, pi0, R0, R_a0,beta),dim=-1)
+            return torch.stack((a0, w0, m0, pi0, R0, R_a0, d0, beta),dim=-1)
     
     def draw_exploration_shocks(self,epsilon_sigma,N):
         """ draw exploration shockss """ 
@@ -382,13 +392,13 @@ class WealthIncomeModelClass(DLSolverClass):
             with torch.no_grad():
                 # a. get states, actions, outcomes
                 states = sim.states[:par.T-1,index_start:index_end]
-                a_prev, w, m, pi, R_b, R_e = [states[..., i] for i in range(6)]
+                a_prev, w, m, pi, R_b, R_e, d_prev = [states[..., i] for i in range(7)]
                 
                 actions = sim.actions[:par.T-1,index_start:index_end]
-                n_act, alpha_e, alpha_b = [actions[..., i] for i in range(3)]
+                n_act, alpha_e, alpha_b, alpha_d = [actions[..., i] for i in range(4)]
 
                 outcomes = sim.outcomes[:par.T-1,index_start:index_end]
-                c, n, s, b, a_pd  = [outcomes[..., i] for i in range(5)]
+                c, n, s, b, a_pd, d_pd  = [outcomes[..., i] for i in range(6)]
                 
                 s = torch.clamp(s, min=1e-3)
                 c = torch.clamp(c, min=1e-3)
@@ -400,7 +410,7 @@ class WealthIncomeModelClass(DLSolverClass):
 
                 # c. next-period states
                 states_plus = self.state_trans(states_pd,train.quad)
-                a_plus, w_plus, m_plus, pi_plus, R_b_plus, R_e_plus = [states_plus[..., i] for i in range(6)]
+                a, w_plus, m_plus, pi_plus, R_b_plus, R_e_plus, d = [states_plus[..., i] for i in range(7)]
 
                 if par.Nstates_fixed > 0:
                     beta = states_plus[..., -1]  # assume beta is last
@@ -409,11 +419,11 @@ class WealthIncomeModelClass(DLSolverClass):
                     
                 # d. actions next-period
                 actions_plus = self.eval_policy(self.policy_NN,states_plus[:par.T-1],t0=1)
-                n_act_plus, alpha_e_plus, alpha_b_plus = [actions_plus[..., i] for i in range(5)]
+                n_act_plus, alpha_e_plus, alpha_b_plus, alpha_d_plus = [actions_plus[..., i] for i in range(4)]
 
                 # e. next-period outcomes
                 outcomes_plus = self.outcomes(states_plus,actions_plus)
-                c_plus, n_plus, s_plus, b_plus, a_pd_plus = [outcomes_plus[..., i] for i in range(5)]
+                c_plus, n_plus, s_plus, b_plus, a_pd_plus, d_pd_plus = [outcomes_plus[..., i] for i in range(6)]
                 
                 s_plus = torch.clamp(s_plus, min=1e-3)
                 c_plus = torch.clamp(c_plus, min=1e-3, max=10)
@@ -425,7 +435,6 @@ class WealthIncomeModelClass(DLSolverClass):
                 marg_util_n_t = model_funcs.marg_util_n(n, par)
 
                 marg_util_c_plus = model_funcs.marg_util_c(c_plus, par)
-                marg_util_n_plus = model_funcs.marg_util_n(n_plus, par)
 
                 # --- f. Expand relevant variables for time t ---
                 kappa = (s - m) / (n_act * w )
@@ -434,25 +443,31 @@ class WealthIncomeModelClass(DLSolverClass):
                 
                 # --- g. Derive FOCS ---
                 #  Illiquid alpha_t^e share FOC
-                term_e = (R_e_plus/pi_plus -1) - 2*par.gamma*(a_pd_exp - a_prev_exp) + 2*par.gamma*(a_pd_plus - a_plus)
+                term_e = (R_e_plus/pi_plus -1) - 2*par.gamma*(a_pd_exp - a_prev_exp) + 2*par.gamma*(a_pd_plus - a)
                 rhs_e = torch.sum(train.quad_w[None, None, :]*term_e* marg_util_c_plus, dim=-1)
                 lhs_e = marg_util_c_t
                 euler_err_illiquid = beta[:-1] * rhs_e / lhs_e[:-1] -1
 
                 # Liquid alpha_t^b share FOC
-                term_b = R_b_exp / pi_plus 
+                term_b = R_b_plus / pi_plus - (R_e_plus/pi_plus -1)*alpha_e_exp + alpha_e_exp * 2*par.gamma*(a_pd_plus - a)
                 rhs_b = torch.sum(train.quad_w[None, None, :]*term_b* marg_util_c_plus, dim=-1)
                 lhs_b = (1-alpha_e) * marg_util_c_t
                 euler_err_bond = beta[:-1] * rhs_b / lhs_b[:-1] -1
                 
-                # Labor Supply Allocation
-                term_n = alpha_b_exp * R_b_exp / pi_plus + (1-alpha_b_exp)*alpha_e_exp*(R_e_plus/pi_plus - 2*par.gamma*(a_pd_exp - a_prev_exp) )
-                rhs_n = w*kappa*torch.sum(train.quad_w[None, None, :]*term_n* marg_util_c_plus, dim=-1)
-                lhs_n = marg_util_n_t + marg_util_c_t * (1-alpha_e)*(1-alpha_b)
+                # Labor supply n_t share FOC
+                term_n = alpha_b_exp * (R_b_plus) / pi_plus + (1-alpha_b_exp)*alpha_e_exp*((R_e_plus/pi_plus-1) - 2*par.gamma*(a_pd_exp - a_prev_exp) )
+                rhs_n = torch.sum(train.quad_w[None, None, :]*term_n* marg_util_c_plus, dim=-1)
+                lhs_n = marg_util_n_t/w*kappa + marg_util_c_t * (1-alpha_e)*(1-alpha_b)
                 euler_err_labor =  beta[:-1] * rhs_n / lhs_n[:-1] -1
                 
+                # Debt allocation alpha_t^d
+                term_d = alpha_b_exp * (R_b_plus) / pi_plus + (1-alpha_b_exp)*alpha_e_exp*(R_e_plus/pi_plus-1) - (par.lbda + (R_b_plus/pi_plus  -1))
+                rhs_d = torch.sum(train.quad_w[None, None, :]*term_d*marg_util_c_plus, dim=-1)
+                lhs_d = marg_util_c_t * (1-alpha_e)*(1-alpha_b)
+                euler_err_debt = beta[:-1] * rhs_d / lhs_d[:-1] -1
+                
                 # j. Batch Euler Error
-                euler_error_Nbatch = torch.stack((euler_err_illiquid, euler_err_bond, euler_err_labor), dim =-1)
+                euler_error_Nbatch = torch.stack((euler_err_illiquid, euler_err_bond, euler_err_labor, euler_err_debt), dim =-1)
                 sim.euler_error[:par.T-1,index_start:index_end] = euler_error_Nbatch
 
 def select_euler_errors(model):

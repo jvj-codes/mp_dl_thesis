@@ -27,7 +27,7 @@ device = choose_gpu()
 model_DL = {}
 
 # DeepSimulate
-K_time = 2 #20.0
+K_time = 20 #20.0
 model_DL['DeepSimulate'] = WealthBehaviorModelClass(algoname='DeepSimulate', par={'j': 0.75, 'bequest': 0.25,'Nstates_fixed': 1}, device=device,train={'K_time': K_time})
 model_DL['DeepSimulate'].solve(do_print=True)
 
