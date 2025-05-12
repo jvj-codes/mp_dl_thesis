@@ -250,7 +250,7 @@ def state_trans(model,state_trans_pd,shocks,t=None):
         
         if t is None:
             #beta = expand_to_quad(beta, train.Nquad)    
-            beta = beta.unsqueeze(-1)  
+            #beta = beta.unsqueeze(-1)  
             beta = beta.unsqueeze(2).expand(-1, -1, train.Nquad, -1)  # (T, N, Nquad, 1)
             
     # c. unpack shocks
@@ -269,6 +269,7 @@ def state_trans(model,state_trans_pd,shocks,t=None):
         R_e_pd  = expand_to_quad(R_e_pd, train.Nquad)
         d_prev = expand_to_quad(d_prev, train.Nquad)
         d_pd = expand_to_quad(d_pd, train.Nquad)
+        a_prev = expand_to_quad(a_prev, train.Nquad)
         
         psi_plus     = expand_to_states(psi_plus,state_trans_pd)
         epsn_R_plus  = expand_to_states(epsn_R_plus,state_trans_pd)
@@ -301,7 +302,7 @@ def state_trans(model,state_trans_pd,shocks,t=None):
     
     # 4. Wages
     if t is None:
-        w_tilde_before = (1-par.rho_w)*torch.log(torch.tensor(par.w_bar)) + par.rho_w*torch.log(w_pd[:par.T_retired]) - par.theta * (torch.log(R_b_pd[:par.T_retired]) - torch.log(torch.tensor(par.R_bar))) + torch.log(pi_pd[:par.T_retired]) - torch.log(pi_plus[:par.T_retired]) + psi_plus
+        w_tilde_before = (1-par.rho_w)*torch.log(torch.tensor(par.w_bar)) + par.rho_w*torch.log(w_pd[:par.T_retired]) - par.theta * (torch.log(R_b_pd[:par.T_retired]) - torch.log(torch.tensor(par.R_bar))) + torch.log(pi_pd[:par.T_retired]) - torch.log(pi_plus[:par.T_retired]) + psi_plus[:par.T_retired]
         w_tilde_after = torch.log(w_pd[par.T_retired:]) + torch.log(pi_pd[par.T_retired:]) - torch.log(pi_plus[par.T_retired:])
         
         w_plus_before = torch.exp(w_tilde_before)
@@ -317,12 +318,16 @@ def state_trans(model,state_trans_pd,shocks,t=None):
     
     # 5. Debt 
     d_plus = (1-par.lbda)*d_prev + d_pd
+    d_plus /= pi_plus
     
-    # 6. Cash on Hand
+    # 6. Assets
+    a_plus = a_pd / pi_plus
+    
+    # 7. Cash on Hand
     m_plus =  (R_plus / pi_plus) * b_pd + (Ra_plus/pi_plus -1) * a_pd - par.gamma * (a_pd - a_prev)**2 - (par.lbda + (R_plus/pi_plus -1))*d_prev
     
     # e. finalize
-    states_plus = torch.stack((a_pd,w_plus,m_plus,pi_plus, R_plus, Ra_plus, d_plus) ,dim=-1)
+    states_plus = torch.stack((a_plus,w_plus,m_plus,pi_plus, R_plus, Ra_plus, d_plus) ,dim=-1)
 
     if par.Nstates_fixed > 0:
         # Ensure beta has the correct shape

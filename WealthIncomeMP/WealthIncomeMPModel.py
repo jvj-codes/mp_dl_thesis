@@ -104,17 +104,17 @@ class WealthIncomeModelClass(DLSolverClass):
         par.R_a0_min = 1.02
         par.R_a0_max = 1.04  
         
-        par.sigma_m0 = 0.5226 #DST data
-        par.mu_m0 = 0.1446 #DST data
+        par.sigma_m0 = 0.5223 #DST data
+        par.mu_m0 = 6.7232 #DST data
         
         par.sigma_w0 = 0.1446 #DST data
-        par.mu_w0 = -6.7336 #DST data
+        par.mu_w0 = -0.0104 #DST data
         
         par.sigma_a0 = 0.1446 #DST data
         par.mu_a0 = -0.6901 #DST data
         
-        par.sigma_d0 = 0.1446 #DST data
-        par.mu_d0 = -6.7336 #DST data
+        par.sigma_d0 = 3.7353 #DST data
+        par.mu_d0 = -5.000 #DST data
         
         par.mu_beta = 0.975
         par.sigma_beta = 0.005

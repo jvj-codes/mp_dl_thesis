@@ -66,7 +66,7 @@ axes[0,1].set_title('Illiquid Share')
 axes[1,0].set_title('Liquid Share')
 
 
-figs, axes = plt.subplots(2, 3, figsize=(16, 9))
+figs, axes = plt.subplots(3, 3, figsize=(16, 9))
 
 for model_key, label in model_DL.items():
     axes[0,0].plot(np.mean(model_DL[model_key].sim.outcomes[:, :,  0].cpu().numpy(), axis=1), label=model_key, lw =2)
@@ -74,7 +74,7 @@ for model_key, label in model_DL.items():
     axes[1,0].plot(np.mean(model_DL[model_key].sim.outcomes[:, :,  2].cpu().numpy(), axis=1), lw = 2) # debt share
     axes[1,1].plot(np.mean(model_DL[model_key].sim.outcomes[:, :,  3].cpu().numpy(), axis=1), lw = 2) # debt share
     axes[1,2].plot(np.mean(model_DL[model_key].sim.outcomes[:, :,  4].cpu().numpy(), axis=1), lw = 2) # debt share
-    
+    axes[2,2].plot(np.mean(model_DL[model_key].sim.outcomes[:, :,  4].cpu().numpy(), axis=1), lw = 2) # debt share
     
 figs.suptitle("Outcomes")
 
@@ -84,6 +84,7 @@ axes[0,1].set_title('Labor Supply')
 axes[1,0].set_title('Ressources')
 axes[1,1].set_title('Bonds')
 axes[1,2].set_title('Illiquid Assets')
+axes[2,2].set_title('New debt')
 
 
 figs, axes = plt.subplots(3, 3, figsize=(16, 9))
@@ -95,6 +96,7 @@ for model_key, label in model_DL.items():
     axes[1,1].plot(np.mean(model_DL[model_key].sim.states[:, :, 3].cpu().numpy(), axis=1), lw = 2) # bond share
     axes[1,2].plot(np.mean(model_DL[model_key].sim.states[:, :, 4].cpu().numpy(), axis=1), lw = 2) # house share
     axes[2,1].plot(np.mean(model_DL[model_key].sim.states[:, :, 5].cpu().numpy(), axis=1), lw = 2) # bond share
+    axes[2,2].plot(np.mean(model_DL[model_key].sim.states[:, :, 6].cpu().numpy(), axis=1), lw = 2) # bond share
 
 figs.suptitle("States patient beta = 0.99")
 axes[0,0].legend()
@@ -104,4 +106,5 @@ axes[1,0].set_title('Money Holdings')
 axes[1,1].set_title('Inflation')
 axes[1,2].set_title('Nominal Interest Rate')
 axes[2,1].set_title('Return on Illiquid Assets')
+axes[2,2].set_title('Debt')
 
