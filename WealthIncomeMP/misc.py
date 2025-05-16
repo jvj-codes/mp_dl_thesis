@@ -190,9 +190,33 @@ def create_PT_shocks(sigma_psi,Npsi,sigma_xi,Nxi,pi=0,mu=None):
 
     return psi.ravel(),psi_w.ravel(),xi.ravel(),xi_w.ravel(),psi.size
 
+
 def expand_dim(var, ref):
+    # if a 2‑D array, only trim off the last row when it's too long
     if var.ndim == 2:
-        return var[:-1].unsqueeze(-1).expand_as(ref)
+        T_var, _ = var.shape
+        T_ref = ref.shape[0]
+        if T_var == T_ref + 1:
+            var2 = var[:-1]
+        elif T_var == T_ref:
+            var2 = var
+        else:
+            raise RuntimeError(
+                f"Time‐dim mismatch in expand_dim: var has {T_var}, ref has {T_ref}"
+            )
+        # now broadcast
+        return var2.unsqueeze(-1).expand_as(ref)
+
+    # if a 3‑D array whose shape doesn’t already match, broadcast it
     elif var.ndim == 3 and var.shape != ref.shape:
         return var.expand_as(ref)
+
+    # otherwise leave it alone
     return var
+
+#def expand_dim(var, ref):
+#    if var.ndim == 2:
+#        return var[:-1].unsqueeze(-1).expand_as(ref)
+#    elif var.ndim == 3 and var.shape != ref.shape:
+#        return var.expand_as(ref)
+#    return var

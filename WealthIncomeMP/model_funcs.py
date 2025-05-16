@@ -31,7 +31,6 @@ def utility(c, n, par):
     -------
     float
         function returns the utility of a household.
-        
     """
 	return c**(1-par.sigma_int)/(1-par.sigma_int) - par.nu*(n**(1+par.eta))/(1+par.eta)
 
@@ -123,7 +122,7 @@ def outcomes(model, states, actions, t0 = 0, t=None):
          if t < par.T_retired:
              d_n = alpha_d * a * par.phi
              s = m + par.kappa[t]*w*n_act + d_n
-         else:   
+         else:
              d_n = torch.zeros_like(w)
              n_act = par.n_retired*torch.ones_like(w)
              s = m + par.kappa[t]*w*n_act
@@ -153,7 +152,7 @@ def reward(model,states,actions,outcomes,t0=0,t=None):
     par = model.par
     train = model.train
     
-    # a. 
+    # a.
     c = outcomes[...,0]
     n = outcomes[...,1]
     
@@ -163,7 +162,7 @@ def reward(model,states,actions,outcomes,t0=0,t=None):
     u = torch.clamp(u, min=-1e6, max=1e6)
 
     # c. finalize
-    return u 
+    return u
 
 #%% Transition
 def state_trans_pd(model,states,actions,outcomes,t0=0,t=None):
@@ -302,29 +301,28 @@ def state_trans(model,state_trans_pd,shocks,t=None):
     
     # 4. Wages
     if t is None:
-        w_tilde_before = (1-par.rho_w)*torch.log(torch.tensor(par.w_bar)) + par.rho_w*torch.log(w_pd[:par.T_retired]) - par.theta * (torch.log(R_b_pd[:par.T_retired]) - torch.log(torch.tensor(par.R_bar))) + torch.log(pi_pd[:par.T_retired]) - torch.log(pi_plus[:par.T_retired]) + psi_plus[:par.T_retired]
-        w_tilde_after = torch.log(w_pd[par.T_retired:]) + torch.log(pi_pd[par.T_retired:]) - torch.log(pi_plus[par.T_retired:])
+        w_tilde_before = (1-par.rho_w)*torch.log(torch.tensor(par.w_bar)) + par.rho_w*torch.log(w_pd[:par.T_retired]) - par.theta * (torch.log(R_b_pd[:par.T_retired]) - torch.log(torch.tensor(par.R_bar))) + torch.log(pi_pd[:par.T_retired]) + psi_plus[:par.T_retired]
+        w_tilde_after = torch.log(w_pd[par.T_retired:])
         
         w_plus_before = torch.exp(w_tilde_before)
         w_plus_after = torch.exp(w_tilde_after)
         w_plus = torch.cat((w_plus_before, w_plus_after), dim=0)
     else:
         if t < par.T_retired:
-            w_tilde = (1-par.rho_w)* torch.log(torch.tensor(par.w_bar)) + par.rho_w*torch.log(w_pd) - par.theta * (torch.log(R_b_pd) - torch.log(torch.tensor(par.R_bar))) + torch.log(pi_pd) - torch.log(pi_plus) + psi_plus
+            w_tilde = (1-par.rho_w)* torch.log(torch.tensor(par.w_bar)) + par.rho_w*torch.log(w_pd) - par.theta * (torch.log(R_b_pd) - torch.log(torch.tensor(par.R_bar))) + torch.log(pi_pd) + psi_plus
             w_plus = torch.exp(w_tilde)
         else:
-            w_tilde = torch.log(w_pd) + torch.log(pi_pd)- torch.log(pi_plus)
+            w_tilde = torch.log(w_pd) 
             w_plus = torch.exp(w_tilde)
     
-    # 5. Debt 
-    d_plus = (1-par.lbda)*d_prev + d_pd
-    d_plus /= pi_plus
-    
-    # 6. Assets
-    a_plus = a_pd / pi_plus
+    # 5. Debt
+    d_plus = (1-par.lbda)*(d_prev + d_pd)
+
+    # 6. Illiquid Assets
+    a_plus = a_pd 
     
     # 7. Cash on Hand
-    m_plus =  (R_plus / pi_plus) * b_pd + (Ra_plus/pi_plus -1) * a_pd - par.gamma * (a_pd - a_prev)**2 - (par.lbda + (R_plus/pi_plus -1))*d_prev
+    m_plus =  (R_plus / pi_plus) * b_pd + (Ra_plus/pi_plus -1) * a_pd - par.gamma * (a_pd - a_prev)**2 - (par.lbda+par.eps_rp + (R_plus/pi_plus -1))*(d_prev+d_pd)
     
     # e. finalize
     states_plus = torch.stack((a_plus,w_plus,m_plus,pi_plus, R_plus, Ra_plus, d_plus) ,dim=-1)
@@ -346,19 +344,17 @@ def terminal_actions(model,states):
 
 	# Case I: states.shape = (1,...,Nstates)
 	# Case II: states.shape = (N,Nstates)
-	
 	par = model.par
 	train = model.train
 	dtype = train.dtype
 	device = train.device
-	
-	actions = torch.ones((*states.shape[:-1],3),dtype=dtype,device=device)
+	actions = torch.ones((*states.shape[:-1],4),dtype=dtype,device=device)
 
 	if train.algoname == 'DeepFOC':
 		multipliers = torch.zeros((*states.shape[:-1],1),dtype=dtype,device=device)
 		actions = torch.cat((actions,multipliers),dim=-1)
 
-	return actions 
+	return actions
 
 def terminal_reward_pd(model, states_pd):
 	""" terminal reward """
@@ -371,20 +367,22 @@ def terminal_reward_pd(model, states_pd):
 	dtype = train.dtype
 	device = train.device
 
-	a_pd = states_pd[...,0] 
-	a_prev = states_pd[...,1] 
-	b_pd = states_pd[...,2] 
+	a_pd = states_pd[...,0]
+	a_prev = states_pd[...,1]
+	b_pd = states_pd[...,2]
 	w_pd = states_pd[...,3]
 	pi_pd = states_pd[...,4]
 	R_b_pd = states_pd[...,5]
 	R_e_pd = states_pd[...,6]
+	d_prev = states_pd[...,7]
+	d_pd = states_pd[...,8]
 
 	# Compute terminal utility
 	if par.bequest == 0:
 		u = torch.zeros_like(b_pd)
 	else:
-		net_wealth = torch.clamp(a_pd + b_pd, min=1e-6)
-		u = par.bequest * net_wealth 
+		net_wealth = torch.clamp(a_pd - d_prev, min=1e-6)
+		u = par.bequest * torch.sqrt(net_wealth)
 	value_pd = u.unsqueeze(-1)
 	return value_pd
 
@@ -455,7 +453,7 @@ def eval_KKT(model, states, states_plus, actions, actions_plus, outcomes, outcom
     
     # --- g. Derive FOCS ---
     #  Illiquid alpha_t^e share FOC
-    term_e = (R_e_plus/pi_plus -1) - 2*par.gamma*(a_pd_exp - a_prev_exp) + 2*par.gamma*(a_pd_plus - a)
+    term_e = (R_e_plus/pi_plus-1) - 2*par.gamma*(a_pd_exp - a_prev_exp) + 2*par.gamma*(a_pd_plus - a)
     rhs_e = torch.sum(train.quad_w[None, None, :]*term_e* marg_util_c_plus, dim=-1)
     lhs_e = marg_util_c_t
     FOC_ilq_ = beta[:-1] * rhs_e - lhs_e[:-1]
@@ -463,7 +461,7 @@ def eval_KKT(model, states, states_plus, actions, actions_plus, outcomes, outcom
     FOC_ilq = torch.cat((FOC_ilq_,FOC_ilq_terminal[None,...]),dim=0)
 
     # Liquid alpha_t^b share FOC
-    term_b = R_b_plus / pi_plus - (R_e_plus/pi_plus -1)*alpha_e_exp + alpha_e_exp * 2*par.gamma*(a_pd_plus - a)
+    term_b = R_b_plus / pi_plus - (R_e_plus/pi_plus -1)*alpha_e_exp + alpha_e_exp * 2*par.gamma*(a_pd_exp - a_prev_exp) + 2*par.gamma*(a_pd_plus - a)
     rhs_b = torch.sum(train.quad_w[None, None, :]*term_b* marg_util_c_plus, dim=-1)
     lhs_b = (1-alpha_e) * marg_util_c_t
     FOC_bond_ = beta[:-1] * rhs_b - lhs_b[:-1]
@@ -471,7 +469,7 @@ def eval_KKT(model, states, states_plus, actions, actions_plus, outcomes, outcom
     FOC_bond = torch.cat((FOC_bond_,FOC_bond_terminal[None,...]),dim=0)
     
     # Labor supply n_t share FOC
-    term_n = alpha_b_exp * (R_b_plus) / pi_plus + (1-alpha_b_exp)*alpha_e_exp*((R_e_plus/pi_plus-1) - 2*par.gamma*(a_pd_exp - a_prev_exp) )
+    term_n = alpha_b_exp * (R_b_plus) / pi_plus + (1-alpha_b_exp)*alpha_e_exp*((R_e_plus/pi_plus-1) - 2*par.gamma*(a_pd_exp - a_prev_exp) + 2*par.gamma*(a_pd_plus - a))
     rhs_n = torch.sum(train.quad_w[None, None, :]*term_n* marg_util_c_plus, dim=-1)
     lhs_n = marg_util_n_t/w*kappa + marg_util_c_t * (1-alpha_e)*(1-alpha_b)
     FOC_labor_ =  beta[:-1] * rhs_n - lhs_n[:-1]
@@ -479,18 +477,18 @@ def eval_KKT(model, states, states_plus, actions, actions_plus, outcomes, outcom
     FOC_labor = torch.cat((FOC_labor_,FOC_labor_terminal[None,...]),dim=0)
     
     # Debt allocation alpha_t^d
-    term_d = alpha_b_exp * (R_b_plus) / pi_plus + (1-alpha_b_exp)*alpha_e_exp*(R_e_plus/pi_plus-1) - (par.lbda + (R_b_plus/pi_plus  -1))
+    term_d = alpha_b_exp * (R_b_plus) / pi_plus + (1-alpha_b_exp)*alpha_e_exp*(R_e_plus/pi_plus-1) - (par.lbda + par.eps_rp+ (R_b_plus/pi_plus  -1))
     rhs_d = torch.sum(train.quad_w[None, None, :]*term_d*marg_util_c_plus, dim=-1)
     lhs_d = marg_util_c_t * (1-alpha_e)*(1-alpha_b)
-    FOC_debt_ = beta[:-1] * rhs_d - lhs_d[:-1] 
+    FOC_debt_ = beta[:-1] * rhs_d - lhs_d[:-1]
     FOC_debt_terminal = lhs_d[-1]
     FOC_debt = torch.cat((FOC_debt_,FOC_debt_terminal[None,...]),dim=0)
     
     # --- h. Constraints ---
-    constraint = par.phi*a_prev - d_pd
-    slackness_ = constraint[:-1] * lambda_t[:-1]
-    slackness_terminal = constraint[-1]
-    slackness = torch.cat((slackness_,slackness_terminal[None,...]),dim=0)
+    constraint_1 = par.phi*a_prev - d_pd
+    slackness_1_ = constraint_1[:-1] * lambda_t[:-1]
+    slackness_terminal_1 = constraint_1[-1]
+    slackness_1 = torch.cat((slackness_1_,slackness_terminal_1[None,...]),dim=0)
 
     # --- i. Final loss (squared KKT residuals) ---
     eq = torch.stack((
@@ -498,7 +496,7 @@ def eval_KKT(model, states, states_plus, actions, actions_plus, outcomes, outcom
         FOC_bond**2,
         FOC_labor**2,
         FOC_debt**2,
-        slackness[:-1]**2
+        slackness_1**2
     ), dim=-1)
 
     return eq

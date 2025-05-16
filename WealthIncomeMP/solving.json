@@ -160,11 +160,253 @@
         "terminate": false
     },
     {
+<<<<<<< HEAD
+<<<<<<< HEAD
+        "timestamp": "2025-05-09 18:51:01",
+        "terminate": true
+    },
+    {
+        "timestamp": "2025-05-09 19:07:37",
+        "terminate": true
+    },
+    {
+        "timestamp": "2025-05-09 19:22:02",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-09 19:22:19",
+        "terminate": true
+    },
+    {
+        "timestamp": "2025-05-09 19:31:10",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-09 19:35:33",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-09 19:35:42",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-09 19:38:27",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-09 19:39:07",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-09 19:39:47",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-09 19:41:09",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-09 19:45:01",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-09 20:18:05",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-09 20:21:41",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-09 20:21:59",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-09 20:22:26",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-09 20:22:54",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-09 20:23:39",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-09 20:46:17",
+        "terminate": true
+    },
+    {
+        "timestamp": "2025-05-09 20:51:39",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-09 21:14:25",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-09 21:23:51",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-09 23:46:11",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-10 10:05:23",
+        "terminate": true
+    },
+    {
+        "timestamp": "2025-05-10 11:44:21",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-10 11:45:06",
+        "terminate": true
+    },
+    {
+        "timestamp": "2025-05-10 13:54:37",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-10 13:54:50",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-10 13:55:27",
+        "terminate": true
+    },
+    {
+        "timestamp": "2025-05-10 14:13:42",
+        "terminate": true
+    },
+    {
+        "timestamp": "2025-05-10 15:08:43",
+        "terminate": true
+    },
+    {
+        "timestamp": "2025-05-10 15:34:22",
+        "terminate": true
+    },
+    {
+        "timestamp": "2025-05-10 15:36:24",
+        "terminate": true
+    },
+    {
+        "timestamp": "2025-05-10 15:44:12",
+        "terminate": true
+    },
+    {
+        "timestamp": "2025-05-10 16:15:42",
+        "terminate": true
+    },
+    {
+        "timestamp": "2025-05-10 16:29:24",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-10 16:29:49",
+        "terminate": true
+    },
+    {
+        "timestamp": "2025-05-10 16:37:31",
+        "terminate": true
+    },
+    {
+        "timestamp": "2025-05-10 16:59:06",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-10 17:00:44",
+        "terminate": true
+    },
+    {
+        "timestamp": "2025-05-10 17:03:31",
+        "terminate": true
+    },
+    {
+        "timestamp": "2025-05-10 17:13:18",
+        "terminate": true
+    },
+    {
+        "timestamp": "2025-05-10 17:15:49",
+        "terminate": true
+    },
+    {
+        "timestamp": "2025-05-10 17:18:23",
+        "terminate": true
+    },
+    {
+        "timestamp": "2025-05-10 17:58:59",
+        "terminate": true
+    },
+    {
+        "timestamp": "2025-05-10 18:03:05",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-10 21:03:06",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-10 22:48:54",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-11 00:36:54",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-11 01:19:45",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-11 02:39:23",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-11 04:18:37",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-11 07:11:50",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-11 07:26:59",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-15 10:37:35",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-15 10:38:01",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-15 10:38:20",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-15 12:07:02",
+        "terminate": false
+    },
+    {
+        "timestamp": "2025-05-15 12:42:27",
+=======
+=======
+>>>>>>> 5de9333361e08c816c83222fc55af9d93e98baeb
         "timestamp": "2025-05-09 18:03:20",
         "terminate": false
     },
     {
         "timestamp": "2025-05-09 18:39:42",
+<<<<<<< HEAD
+>>>>>>> 5de9333361e08c816c83222fc55af9d93e98baeb
+=======
+>>>>>>> 5de9333361e08c816c83222fc55af9d93e98baeb
         "terminate": false
     }
 ]

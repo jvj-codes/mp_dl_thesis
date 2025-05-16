@@ -18,7 +18,7 @@ import model_funcs
 from EconDLSolvers import DLSolverClass, torch_uniform, compute_transfer
 from model_funcs import terminal_actions
 
-class WealthIncomeModelClass(DLSolverClass):
+class WealthIncomeModelClass_CaseStudy(DLSolverClass):
     
     #########
 	# setup #
@@ -96,11 +96,9 @@ class WealthIncomeModelClass(DLSolverClass):
         par.Npi  = 5 #4                  #inflation shock quardrature nodes
     
         # a.9 initial states
-        par.pi_min = 1.02 # minimum inflation of 2%, DST data
-        par.pi_max = 1.03 # maximum inflation of 3%, DST data
+        par.pi0 = 1.02 # minimum inflation of 2%, DST data
         
-        par.R_min = 1.025  # minimum interest rate of 2%, DST data
-        par.R_max = 1.045  # maximum interest rate of 4%, DST data
+        par.R0 = 1.03  # minimum interest rate of 2%, DST data
 
         par.R_a0_min = 1.02
         par.R_a0_max = 1.04
@@ -130,6 +128,10 @@ class WealthIncomeModelClass(DLSolverClass):
         
         par.mu_beta = 0.975
         par.sigma_beta = 0.005
+
+        # a. 10 shock periods for MP
+        par.shock_periods = None
+        par.R_shock = -0.01 #1 percentage monetary policy
         
         # b. solver settings
         
@@ -138,7 +140,7 @@ class WealthIncomeModelClass(DLSolverClass):
         par.Delta_MPC = 1e-4 # windfall used in MPC calculation
         
         # states, actions and shocks
-        par.Nstates_fixed = 0 # 1 = heterogenous beta, 0 = fixed beta
+        par.Nstates_fixed = 1 # 1 = heterogenous beta, 0 = fixed beta
         par.Nshocks = 4
         
         # outcomes and actions
@@ -307,15 +309,51 @@ class WealthIncomeModelClass(DLSolverClass):
         return quad, quad_w
 
     
-    def draw_shocks(self,N):
-      
-      par = self.par
-      
-      psi = torch.normal(mean=par.psi_mu,std=par.psi_sigma, size=(par.T,N,))
-      epsn_R = torch.normal(mean=par.R_mu, std=par.R_sigma, size=(par.T,N,))
-      epsn_pi = torch.normal(par.pi_mu, par.pi_sigma, size=(par.T,N,))
-      epsn_e = torch.normal(par.e_mu, par.e_sigma, size=(par.T,N,))
-      return torch.stack((psi, epsn_R, epsn_pi, epsn_e),dim=-1) 
+    def draw_shocks(self, N):
+        par = self.par
+        torch.manual_seed(1337)
+
+        def apply_pct_shock(eps, shock_periods, pct=0.01):
+            """
+            Add +pct to eps in each period or period-range in shock_periods.
+        
+            eps : torch.Tensor, shape (T,) or (T, N)
+            shock_periods : iterable of ints or (start,end) tuples
+            pct : float, e.g. 0.01 for +1 pp
+            """
+            eps = eps.clone()
+            # prepare the delta as a tensor matching eps’s dtype & device
+            delta = torch.tensor(pct, dtype=eps.dtype, device=eps.device)
+        
+            for p in shock_periods:
+                if isinstance(p, (tuple, list)):
+                    s, e = p
+                    # for 1-D eps this will broadcast correctly
+                    eps[s:e, ...] += delta
+                else:
+                    t = p
+                    eps[t, ...] += delta
+        
+            return eps
+
+
+        # 1) idiosyncratic
+        psi    = torch.normal(par.psi_mu,    par.psi_sigma, size=(par.T, N))
+        epsn_e = torch.normal(par.e_mu,      par.e_sigma,   size=(par.T, N))
+
+        # 2) policy‐rate: draw baseline, then overlay +1 percentage‐point
+        epsn_R = torch.normal(par.R_mu, par.R_sigma, size=(par.T,))
+        if par.experiment == "R1pp":
+            epsn_R = apply_pct_shock(epsn_R, par.shock_periods, par.R_shock)
+        epsn_R = epsn_R.unsqueeze(1).expand(-1, N).clone()
+
+        # 3) inflation
+        epsn_pi = torch.normal(par.pi_mu, par.pi_sigma, size=(par.T,))
+        epsn_pi = epsn_pi.unsqueeze(1).expand(-1, N).clone()
+
+        # 4) stack into (T, N, 4)
+        return torch.stack((psi, epsn_R, epsn_pi, epsn_e), dim=-1)
+
 
     
     def draw_initial_states(self,N,training=False): #atm uniform
@@ -326,10 +364,10 @@ class WealthIncomeModelClass(DLSolverClass):
         a0 = torch.exp(torch.normal(mean=par.mu_a0, std=par.sigma_a0, size=(N,))) 
         
         # b. draw initial inflation pi
-        pi0 = torch_uniform(par.pi_min, par.pi_max, size = (N,))
+        pi0 = torch.ones(N)*par.pi0
         
         # c. draw initial nominal interest rate
-        R0 = torch_uniform(par.R_min, par.R_max, size = (N,))
+        R0 = torch.ones(N)*par.R0
         
         # d. draw initial illiquid assets
         R_a0 = torch_uniform(par.R_a0_min, par.R_a0_max, size = (N,))
