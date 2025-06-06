@@ -60,9 +60,9 @@ def normal_gauss_hermite(sigma,n=7,mu=None):
         w = np.ones(n)/n
         
         if mu is None:
-            x = np.zeroes(n)
+            x = np.zeros(n)
         else:
-            x = np.zeroes(n)+mu
+            x = np.zeros(n)+mu
 
         return x,w
 

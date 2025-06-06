@@ -63,8 +63,8 @@ class WealthIncomeModelClass(DLSolverClass):
         par.phi_R = 0.015         #impact on inflation: Danish data
         
         # a.5 Iliquid return & cost
-        par.Ra_bar = 1.07 #
-        par.phi_Ra = 0.8 #high impact
+        par.Ra_bar = 1.12 #
+        par.phi_Ra = 2.20
         par.rho_a = 0.15 #low persistence
         par.gamma = 0.02 #survey 0.04
         
@@ -83,7 +83,7 @@ class WealthIncomeModelClass(DLSolverClass):
         par.psi_mu = 0.05                #wage shock mean
         par.Npsi = 5                     #wage shock quadrature nodes   
         
-        par.e_sigma = 0.005               #illiquid returns shock (std. dev)
+        par.e_sigma = 0.02               #illiquid returns shock (std. dev)
         par.e_mu = 0.00                  #illiquid returns shock (mean)
         par.Ne = 5                     #illiquid returns shock quadrature nodes
         
@@ -106,27 +106,21 @@ class WealthIncomeModelClass(DLSolverClass):
         par.R_a0_max = 1.04
 
         # Money holdings m₀ ∼ LogN(μ_m0, σ_m0²)
-        par.sigma_m0 = 0.5223   # from pooled INDKP201 fit
-        par.mu_m0    = -0.0104   # ln(median_money) – shift
-        #par.sigma_m0 = 5.8805   # from pooled INDKP201 fit
-        #par.mu_m0    = 1.6921   # ln(median_money) – shift
-        #Rescaled money:  μ_m0 = 6.7232, σ_m0 = 0.5223
+        par.mu_m0 = 0.5822
+        par.sigma_m0 = 1.6921/2
         
         # Wage w₀ ∼ LogN(μ_w0, σ_w0²)
         par.sigma_w0 = 0.1446   # from pooled LONS60 fit
         par.mu_w0    = -0.0104  # ln(median_wage) – shift  (E[w]=1)
         
         # Assets a₀ ∼ LogN(μ_a0, σ_a0²)
-        par.sigma_a0 = 0.1446   # same as wage 
-        par.mu_a0    = -0.6901  # ln(median_assets) – shift
-        #par.sigma_a0 = 1.6282   # same as wage 
-        #par.mu_a0    = 5.6854  # ln(median_assets) – shift
+        par.sigma_a0 = 1.6282/2   # same as wage 
+        par.mu_a0 = 0.3871
+
         
         # Debt d₀ ∼ LogN(μ_d0, σ_d0²) FORUME111
-        par.sigma_d0 = 0.1446   
-        par.mu_d0    = -3  
-        #par.sigma_d0 = 2.3172  
-        #par.mu_d0    = 3.7353  
+        par.sigma_d0 = 0.5223  
+        par.mu_d0    = -3   
         
         par.mu_beta = 0.975
         par.sigma_beta = 0.005
@@ -215,7 +209,8 @@ class WealthIncomeModelClass(DLSolverClass):
         sim.outcomes = torch.zeros((par.T,sim.N,par.Noutcomes),dtype=dtype,device=device)
         sim.actions = torch.zeros((par.T,sim.N,par.Nactions),dtype=dtype,device=device)
         sim.reward = torch.zeros((par.T,sim.N),dtype=dtype,device=device)
-        sim.euler_error = torch.zeros((par.T-1,sim.N,par.Nactions),dtype=dtype,device=device)
+        #sim.euler_error = torch.zeros((par.T-1,sim.N,par.Nactions),dtype=dtype,device=device)
+        sim.euler_error = torch.zeros((par.T-2,sim.N,par.Nactions-2),dtype=dtype,device=device) #consumption, labor only
         sim.R = np.nan
         
     def setup_train(self):
@@ -245,7 +240,7 @@ class WealthIncomeModelClass(DLSolverClass):
             ## n, alpha_e, alpha_b, alpha_d
             train.policy_activation_final = ['sigmoid', 'sigmoid', 'sigmoid', 'sigmoid']
             train.min_actions = torch.tensor([0.0000, 0.0000, 0.0000, 0.0000],dtype=dtype,device=device) #minimum action value n, alpha_d, alpha_e, alpha_b, alpha_h
-            train.max_actions = torch.tensor([1.0-1e-6, 1.0-1e-6, 1.0-1e-6, 1.0-1e-6],dtype=dtype,device=device) #maximum action value n, alpha_d, alpha_e, alpha_b, alpha_h
+            train.max_actions = torch.tensor([1.0, 1.0-1e-6, 1.0-1e-6, 1.0],dtype=dtype,device=device) #maximum action value n, alpha_d, alpha_e, alpha_b, alpha_h
 
         # c. misc
         train.terminal_actions_known = False # use terminal actions
@@ -417,7 +412,9 @@ class WealthIncomeModelClass(DLSolverClass):
             # c. MPC
             sim.MPC[:,:] = (c_alt-c)/par.Delta_MPC
 
-    def compute_euler_errors(self,Nbatch_share=0.01):
+
+
+    def compute_euler_errors(self,Nbatch_share=0.001):
         """ compute euler error"""
 
         par = self.par
@@ -434,13 +431,13 @@ class WealthIncomeModelClass(DLSolverClass):
 
             with torch.no_grad():
                 # a. get states, actions, outcomes
-                states = sim.states[:par.T-1,index_start:index_end]
+                states = sim.states[:par.T-2,index_start:index_end]
                 a_prev, w, m, pi, R_b, R_e, d_prev = [states[..., i] for i in range(7)]
                 
-                actions = sim.actions[:par.T-1,index_start:index_end]
+                actions = sim.actions[:par.T-2,index_start:index_end]
                 n_act, alpha_e, alpha_b, alpha_d = [actions[..., i] for i in range(4)]
 
-                outcomes = sim.outcomes[:par.T-1,index_start:index_end]
+                outcomes = sim.outcomes[:par.T-2,index_start:index_end]
                 c, n, s, b, a_pd, d_pd  = [outcomes[..., i] for i in range(6)]
                 
                 s = torch.clamp(s, min=1e-3)
@@ -463,7 +460,7 @@ class WealthIncomeModelClass(DLSolverClass):
                     beta = par.beta
                     
                 # d. actions next-period
-                actions_plus = self.eval_policy(self.policy_NN,states_plus[:par.T-1],t0=1)
+                actions_plus = self.eval_policy(self.policy_NN,states_plus[:par.T-2],t0=1)
                 n_act_plus, alpha_e_plus, alpha_b_plus, alpha_d_plus = [actions_plus[..., i] for i in range(4)]
 
                 # e. next-period outcomes
@@ -482,47 +479,146 @@ class WealthIncomeModelClass(DLSolverClass):
                 marg_util_c_plus = model_funcs.marg_util_c(c_plus, par)
 
                 # --- f. Expand relevant variables for time t ---
-                kappa = ((s - m) / (n_act * w ))
+                kappa = ((s - m- d_pd) / (n * w ))
                 expand_vars = [a_pd, a_prev, R_b, w, alpha_e, alpha_b]
                 a_pd_exp, a_prev_exp, R_b_exp, alpha_e_exp, alpha_b_exp, kappa_exp = [misc.expand_dim(v, R_b_plus) for v in expand_vars]
                     
                 # --- g. Derive FOCS ---
-                #  Illiquid alpha_t^e share FOC
-                term_e = (R_e_plus/pi_plus-1) - 2*par.gamma*(a_pd_exp - a_prev_exp) + 2*par.gamma*(a_pd_plus - a)
-                rhs_e = torch.sum(beta *train.quad_w[None, None, :]*term_e* marg_util_c_plus, dim=-1)
-                lhs_e = marg_util_c_t
-                euler_err_illiquid =  rhs_e / lhs_e -1
+                #  Consumption FOC
+                term_c = (R_b_exp/pi_plus) 
+                rhs_c = torch.sum(beta *train.quad_w[None, None, :]*term_c* marg_util_c_plus, dim=-1)
+                lhs_c= marg_util_c_t
+                euler_err_consump =  torch.abs(rhs_c / lhs_c -1)
+                #print(f"euler err consump: {euler_err_consump.mean()}")
 
-                #print("mean gross real r^a:", ((R_e_plus/pi_plus)).mean().item())
-                #print("mean −χ_today:    ", (-2*par.gamma*(a_pd_exp - a_prev_exp)).mean().item())
-                #print("mean +χ_tomorrow:  ", ( 2*par.gamma*(a_pd_plus - a)).mean().item())
-                #print(f"beta shape: {beta.shape}")
-                #print(f"term_e shape: {term_e.shape}")
-                #print(f"marg util c plus shape: {marg_util_c_plus.shape}")
-                #print(f"train quad w shape: {train.quad_w[None, None, :].shape}")
-                
-
-                # Liquid alpha_t^b share FOC
-                term_b = R_b_plus / pi_plus - (R_e_plus/pi_plus -1)*alpha_e_exp + alpha_e_exp * 2*par.gamma*(a_pd_exp - a_prev_exp) + 2*par.gamma*(a_pd_plus - a)
-                rhs_b = torch.sum(beta *train.quad_w[None, None, :]*term_b* marg_util_c_plus, dim=-1)
-                lhs_b = (1-alpha_e) * marg_util_c_t
-                euler_err_bond =  rhs_b / lhs_b -1
-                
-                # Labor supply n_t share FOC
-                term_n = alpha_b_exp * (R_b_plus) / pi_plus + (1-alpha_b_exp)*alpha_e_exp*((R_e_plus/pi_plus-1) - 2*par.gamma*(a_pd_exp - a_prev_exp) + 2*par.gamma*(a_pd_plus - a))
-                rhs_n = torch.sum(beta *train.quad_w[None, None, :]*term_n* marg_util_c_plus, dim=-1)
-                lhs_n = marg_util_n_t/w*kappa + marg_util_c_t * (1-alpha_e)*(1-alpha_b)
-                euler_err_labor =   rhs_n/ lhs_n -1
-                
-                # Debt allocation alpha_t^d
-                term_d = alpha_b_exp * (R_b_plus) / pi_plus + (1-alpha_b_exp)*alpha_e_exp*(R_e_plus/pi_plus-1) - (par.lbda + par.eps_rp+ (R_b_plus/pi_plus  -1))
-                rhs_d = torch.sum(beta*train.quad_w[None, None, :]*term_d*marg_util_c_plus, dim=-1)
-                lhs_d = marg_util_c_t * (1-alpha_e)*(1-alpha_b)
-                euler_err_debt =  rhs_d / lhs_d -1
-                
+                # Labor supply  FOC
+                term_n = alpha_b_exp * (R_b_exp) / pi_plus + (1-alpha_b_exp)*alpha_e_exp*(R_e_plus/pi_plus-1 -2*par.gamma*(a_pd_exp - a_prev_exp)) 
+                rhs_n = torch.sum(beta *train.quad_w[None, None, :]*term_n*marg_util_c_plus, dim=-1)
+                lhs_n = marg_util_c_t + par.nu*n**par.eta / w * kappa
+                euler_err_labor =   torch.abs(rhs_n / lhs_n -1)
+                #print(f"rhs_n mean: {rhs_n.mean()}")
+                #print(f"lhs_n mean: {lhs_n.mean()}")
+          
                 # j. Batch Euler Error
-                euler_error_Nbatch = torch.stack((euler_err_illiquid, euler_err_bond, euler_err_labor, euler_err_debt), dim =-1)
-                sim.euler_error[: par.T-1,index_start:index_end] = euler_error_Nbatch
+                euler_error_Nbatch = torch.stack((euler_err_consump, euler_err_labor), dim =-1)
+                sim.euler_error[: par.T-2,index_start:index_end] = euler_error_Nbatch
+    # compute_euler_errors(self,Nbatch_share=0.01):
+    # """ compute euler error"""
+#
+    # par = self.par
+    # sim = self.sim
+    # train = self.train
+#
+    # Nbatch = int(Nbatch_share*sim.N)
+#
+#
+    # for i in range(0,sim.N,Nbatch):
+#
+    #     index_start = i
+    #     index_end = i + Nbatch
+#
+    #     with torch.no_grad():
+    #         # a. get states, actions, outcomes
+    #         states = sim.states[:par.T-1,index_start:index_end]
+    #         a_prev, w, m, pi, R_b, R_e, d_prev = [states[..., i] for i in range(7)]
+    #         
+    #         actions = sim.actions[:par.T-1,index_start:index_end]
+    #         n_act, alpha_e, alpha_b, alpha_d = [actions[..., i] for i in range(4)]
+#
+    #         outcomes = sim.outcomes[:par.T-1,index_start:index_end]
+    #         c, n, s, b, a_pd, d_pd  = [outcomes[..., i] for i in range(6)]
+    #         
+    #         s = torch.clamp(s, min=1e-3)
+    #         c = torch.clamp(c, min=1e-3)
+    #         b = torch.clamp(b, min=1e-3)
+    #         a_pd = torch.clamp(a_pd, min=1e-3)
+#
+    #         # b. post-decision states
+    #         states_pd = self.state_trans_pd(states,actions,outcomes)
+#
+    #         # c. next-period states
+    #         states_plus = self.state_trans(states_pd,train.quad)
+    #         a, w_plus, m_plus, pi_plus, R_b_plus, R_e_plus, d = [states_plus[..., i] for i in range(7)]
+#
+    #         if par.Nstates_fixed > 0:
+    #             beta = states_plus[..., -1]  # assume beta is last
+    #             if beta.ndim == 4 and beta.shape[-1] == 1:
+    #                 beta = beta.squeeze(-1)   # now shape (T, N, Nquad)
+    #         else:
+    #             beta = par.beta
+    #             
+    #         # d. actions next-period
+    #         actions_plus = self.eval_policy(self.policy_NN,states_plus[:par.T-1],t0=1)
+    #         n_act_plus, alpha_e_plus, alpha_b_plus, alpha_d_plus = [actions_plus[..., i] for i in range(4)]
+#
+    #         # e. next-period outcomes
+    #         outcomes_plus = self.outcomes(states_plus,actions_plus)
+    #         c_plus, n_plus, s_plus, b_plus, a_pd_plus, d_pd_plus = [outcomes_plus[..., i] for i in range(6)]
+    #         
+    #         s_plus = torch.clamp(s_plus, min=1e-3)
+    #         c_plus = torch.clamp(c_plus, min=1e-3)
+    #         b_plus = torch.clamp(b_plus, min=1e-3)
+    #         a_pd_plus = torch.clamp(a_pd_plus, min=1e-3)
+    #         
+    #         # f. marginal utility current and next period
+    #         marg_util_c_t = model_funcs.marg_util_c(c, par)
+    #         marg_util_n_t = model_funcs.marg_util_n(n, par)
+#
+    #         marg_util_c_plus = model_funcs.marg_util_c(c_plus, par)
+#
+    #         # --- f. Expand relevant variables for time t ---
+    #         kappa = ((s - m) / (n_act * w ))
+    #         expand_vars = [a_pd, a_prev, R_b, w, alpha_e, alpha_b]
+    #         a_pd_exp, a_prev_exp, R_b_exp, alpha_e_exp, alpha_b_exp, kappa_exp = [misc.expand_dim(v, R_b_plus) for v in expand_vars]
+    #             
+    #         # --- g. Derive FOCS ---
+    #         #  Illiquid alpha_t^e share FOC
+    #         term_e = (R_e_plus/pi_plus) - 2*par.gamma*(a_pd_exp - a_prev_exp) #+ 2*par.gamma*(a_pd_plus - a)
+    #         rhs_e = torch.sum(beta *train.quad_w[None, None, :]*term_e* marg_util_c_plus, dim=-1)
+    #         lhs_e = marg_util_c_t
+    #         euler_err_illiquid =  rhs_e / lhs_e -1
+#
+    #         #print(f"rhs_e mean {rhs_e.mean()}")
+    #         #print(f"lhs_e mean {lhs_e.mean()}")
+    #         #print("mean gross real r^a:", ((R_e_plus/pi_plus)).mean().item())
+    #         #print("mean −χ_today:    ", (-2*par.gamma*(a_pd_exp - a_prev_exp)).mean().item())
+    #         #print("mean +χ_tomorrow:  ", ( 2*par.gamma*(a_pd_plus - a)).mean().item())
+    #         #print(f"beta shape: {beta.shape}")
+    #         #print(f"term_e shape: {term_e.shape}")
+    #         #print(f"marg util c plus shape: {marg_util_c_plus.shape}")
+    #         #print(f"train quad w shape: {train.quad_w[None, None, :].shape}")
+    #         
+#
+    #         # Liquid alpha_t^b share FOC
+    #         term_b = R_b_plus / pi_plus - (R_e_plus/pi_plus -1)*alpha_e_exp + alpha_e_exp * 2*par.gamma*(a_pd_exp - a_prev_exp) #+ 2*par.gamma*(a_pd_plus - a)
+    #         rhs_b = torch.sum(beta *train.quad_w[None, None, :]*term_b* marg_util_c_plus, dim=-1)
+    #         lhs_b = (1-alpha_e) * marg_util_c_t
+    #         euler_err_bond =  rhs_b / lhs_b -1
+    #         
+    #         # Labor supply n_t share FOC
+    #         term_n = alpha_b_exp * (R_b_plus) / pi_plus + (1-alpha_b_exp)*alpha_e_exp*(R_e_plus/pi_plus-1) - 2*par.gamma*(a_pd_exp - a_prev_exp) #+ 2*par.gamma*(a_pd_plus - a))
+    #         rhs_n = torch.sum(beta *train.quad_w[None, None, :]*term_n* marg_util_c_plus, dim=-1)
+    #         lhs_n = marg_util_c_t   + marg_util_n_t/w*kappa  #* (1-alpha_e)*(1-alpha_b)
+    #         euler_err_labor =   rhs_n/ lhs_n -1
+#
+    #         #print(f"rhs_n mean {rhs_n.mean()}")
+    #         #print(f"lhs_n mean {lhs_n.mean()}")
+    #         #print("______")
+#
+    #         
+    #         # Debt allocation alpha_t^d
+    #         term_d = alpha_b_exp * (R_b_plus) / pi_plus + (1-alpha_b_exp)*alpha_e_exp*(R_e_plus/pi_plus-1) - (par.lbda + par.eps_rp+ (R_b_plus/pi_plus  -1))
+    #         rhs_d = torch.sum(beta*train.quad_w[None, None, :]*term_d*marg_util_c_plus, dim=-1)
+    #         lhs_d = marg_util_c_t * (1-alpha_e)*(1-alpha_b)
+    #         euler_err_debt =  rhs_d / lhs_d -1
+#
+    #         #print(f"rhs_d mean {rhs_d.mean()}")
+    #         #print(f"lhs_d mean {lhs_d.mean()}")
+    #         #print("______")
+    #         
+    #         # j. Batch Euler Error
+    #         euler_error_Nbatch = torch.stack((euler_err_illiquid, euler_err_bond, euler_err_labor, euler_err_debt), dim =-1)
+    #         sim.euler_error[: par.T-1,index_start:index_end] = euler_error_Nbatch
 
 def select_euler_errors(model):
     """ compute mean euler error """
@@ -531,11 +627,11 @@ def select_euler_errors(model):
     sim = model.sim
 
     savings_indicator = (
-    (sim.actions[:par.T_retired, :, 1] > par.Euler_error_min_savings)
+    (sim.actions[:par.T-1, :, 1] > par.Euler_error_min_savings)
     |  # element‐wise “or”
-    (sim.actions[:par.T_retired, :, 2] > par.Euler_error_min_savings)
+    (sim.actions[:par.T-1, :, 2] > par.Euler_error_min_savings)
     )
-    return sim.euler_error[:par.T_retired,:][savings_indicator]
+    return sim.euler_error[:par.T-1,:][savings_indicator]
 
 def mean_log10_euler_error_working(model):
 

@@ -128,19 +128,19 @@ def outcomes(model, states, actions, t0 = 0, t=None):
              s = m + par.kappa[t]*w*n_act
       
     ## ressources
-    s = torch.clamp(s, min=1e-3)
+    #s = torch.clamp(s, min=1e-3)
     
     ## consumption
     c = (1-alpha_e)*(1-alpha_b)*s
-    c = torch.clamp(c, min=1e-3)
+    #c = torch.clamp(c, min=1e-3)
 
     # bonds    
     b = alpha_b * s
-    b = torch.clamp(b, min=1e-3)
+    #b = torch.clamp(b, min=1e-3)
     
     # illiquid assets with clamping
     a_bar = alpha_e*(1-alpha_b) * s
-    a_bar = torch.clamp(a_bar, min=1e-3)
+    #a_bar = torch.clamp(a_bar, min=1e-3)
     
     a_t = a_bar + a
         
@@ -322,7 +322,7 @@ def state_trans(model,state_trans_pd,shocks,t=None):
     a_plus = a_pd 
     
     # 7. Cash on Hand
-    m_plus =  (R_plus / pi_plus) * b_pd + (Ra_plus/pi_plus -1) * a_pd - par.gamma * (a_pd - a_prev)**2 - (par.lbda+par.eps_rp + (R_plus/pi_plus -1))*(d_prev+d_pd)
+    m_plus =  (R_b_pd / pi_plus) * b_pd + (Ra_plus/pi_plus -1) * a_pd - par.gamma * (a_pd - a_prev)**2 - (par.lbda+par.eps_rp + (R_b_pd/pi_plus -1))*(d_prev+d_pd)
     
     # e. finalize
     states_plus = torch.stack((a_plus,w_plus,m_plus,pi_plus, R_plus, Ra_plus, d_plus) ,dim=-1)
